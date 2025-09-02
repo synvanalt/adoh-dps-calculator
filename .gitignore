@@ -1,0 +1,12 @@
+# Editor/IDE files
+.idea/
+.vscode/
+
+# Compiled Python bytecode
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Manual scripts
+run_script.py
