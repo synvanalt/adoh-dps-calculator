@@ -125,6 +125,8 @@ def register_reset_to_defaults(app):
         Output('damage-limit-switch', 'value', allow_duplicate=True),
         Output('damage-limit-input', 'value', allow_duplicate=True),
         Output('dmg-vs-race-switch', 'value', allow_duplicate=True),
+        Output('relative-change-input', 'value', allow_duplicate=True),
+        Output('relative-std-input', 'value', allow_duplicate=True),
         Output('target-immunities-switch', 'value', allow_duplicate=True),
         Output({'type': 'immunity-input', 'name': ALL}, 'value', allow_duplicate=True),
         Output('immunities-store', 'data', allow_duplicate=True),
@@ -168,6 +170,8 @@ def register_reset_to_defaults(app):
                 default_cfg.DAMAGE_LIMIT_FLAG,
                 default_cfg.DAMAGE_LIMIT,
                 default_cfg.DAMAGE_VS_RACE,
+                default_cfg.CHANGE_THRESHOLD * 100,  # convert to percentage
+                default_cfg.STD_THRESHOLD * 100,     # convert to percentage
                 default_cfg.TARGET_IMMUNITIES_FLAG,
                 [val * 100 for val in default_cfg.TARGET_IMMUNITIES.values()],
                 reset_immunities_store,

@@ -27,6 +27,8 @@ class Config:
     DAMAGE_LIMIT_FLAG: bool = False
     DAMAGE_LIMIT: int = 6000
     DAMAGE_VS_RACE: bool = False
+    CHANGE_THRESHOLD: float = 0.0001
+    STD_THRESHOLD: float = 0.0001
 
     # USER INPUTS - CHARACTER
     AB: int = 68

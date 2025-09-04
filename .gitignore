@@ -10,3 +10,6 @@ __pycache__/
 
 # Manual scripts
 run_script.py
+
+# Other files
+commitlint_guidelines.txt

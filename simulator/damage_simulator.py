@@ -26,15 +26,11 @@ class DamageSimulator:
         self.dmg_dict_legend = {}
         self.collect_damage_from_all_sources()
 
-        # Convergence parameters
-        self.std_threshold = 0.0001
-        self.change_threshold = 0.0001
-        self.window_size = 15
-
-        # z-score lookup (normal distribution)
+        # Convergence params, z-score lookup (normal distribution)
         z_values = {0.90: 1.645, 0.95: 1.96, 0.99: 2.576}
         self.confidence = 0.99
         self.z = z_values.get(self.confidence, 2.576)
+        self.window_size = 15
 
         # Convergence tracking - crit allowed
         self.total_dmg = 0
@@ -91,7 +87,7 @@ class DamageSimulator:
         relative_change = (max(self.dps_window) - min(self.dps_window)) / dps_window_mean
 
         # Convergence check
-        if relative_std < self.std_threshold and relative_change < self.change_threshold:
+        if relative_std < self.cfg.STD_THRESHOLD and relative_change < self.cfg.CHANGE_THRESHOLD:
             print(f"Converged after {round_num} rounds ({self.confidence * 100}% CI).")
             return True
 

@@ -141,6 +141,53 @@ def build_simulation_settings(cfg):
                         placement='top',  # top, bottom, left, right
                     ),
                 ], class_name='switcher'),
+
+                # Relative Change Convergence
+                dbc.Row([
+                    dbc.Col(dbc.Label(
+                        'Relative Change Convergence:',
+                        html_for='relative-change-input',
+                    ), xs=6, md=6),
+                    dbc.Col(dbc.Input(
+                        id='relative-change-input',
+                        type='number',
+                        value=cfg.CHANGE_THRESHOLD * 100,   # convert to percentage
+                        min=0,
+                        max=100,
+                        persistence=True,
+                        persistence_type=persist_type,
+                    ), xs=5, md=5),
+                    dbc.Col(html.Span("%"), xs=1, md=1),
+                    dbc.Tooltip(
+                        "Sets the maximum allowed relative mean change within a 15 rounds window. Lower values require smaller changes for convergence to be detected.",
+                        target='relative-change-input',  # must match the component's id
+                        placement='top',  # top, bottom, left, right
+                    ),
+                ], class_name=''),
+
+                # Relative STD Convergence
+                dbc.Row([
+                    dbc.Col(dbc.Label(
+                        'Relative STD Convergence:',
+                        html_for='relative-std-input',
+                    ), xs=6, md=6),
+                    dbc.Col(dbc.Input(
+                        id='relative-std-input',
+                        type='number',
+                        value=cfg.STD_THRESHOLD * 100,  # convert to percentage
+                        min=0,
+                        max=100,
+                        persistence=True,
+                        persistence_type=persist_type,
+                    ), xs=5, md=5),
+                    dbc.Col(html.Span("%"), xs=1, md=1),
+                    dbc.Tooltip(
+                        "Sets the maximum allowed standard deviation relative to the mean within a 15 rounds window. Lower values demand more stability before the simulation is considered converged.",
+                        target='relative-std-input',  # must match the component's id
+                        placement='top',  # top, bottom, left, right
+                    ),
+                ], class_name=''),
+
             ], xs=12, md=6, class_name='col-left'),
 
             # Target Immunities
@@ -161,9 +208,6 @@ def build_simulation_settings(cfg):
                         xs=12, md=12,
                     )
                 ], id={'type': 'immunities', 'name': 'container'}, className='border rounded p-3 mb-4')
-
-
-
             ], xs=12, md=6, class_name='col-right'),
 
         ], className='', style={'display': 'flex', 'alignItems': 'flex-start'}),

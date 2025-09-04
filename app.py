@@ -87,7 +87,7 @@ app.layout = dbc.Container([
                     # Simulation settings
                     dbc.Row([
                         build_simulation_settings(cfg)
-                    ], className='mb-4', style={'display': 'flex', 'alignItems': 'flex-start'})
+                    ], className='mb-0', style={'display': 'flex', 'alignItems': 'flex-start'})
                 ], fluid=True, className='border-bottom rounded-bottom border-start border-end p-5 mb-4'),
             ]),
 
@@ -173,6 +173,8 @@ def toggle_overlay(n_clicks_calc, n_clicks_recalc):
     State('damage-limit-switch', 'value'),
     State('damage-limit-input', 'value'),
     State('dmg-vs-race-switch', 'value'),
+    State('relative-change-input', 'value'),
+    State('relative-std-input', 'value'),
     State('target-immunities-switch', 'value'),
     State({'type': 'immunity-input', 'name': ALL}, 'value'),
     prevent_initial_call=True
@@ -180,7 +182,8 @@ def toggle_overlay(n_clicks_calc, n_clicks_recalc):
 def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_bonus,
                     str_mod, two_handed, weaponmaster, keen, improved_crit, shape_weapon_override, shape_weapon,
                     add_dmg_state, add_dmg1, add_dmg2, add_dmg3,
-                    weapons, target_ac, rounds, dmg_limit_flag, dmg_limit, dmg_vs_race, immunity_flag, immunity_values):
+                    weapons, target_ac, rounds, dmg_limit_flag, dmg_limit, dmg_vs_race,
+                    relative_change, relative_std, immunity_flag, immunity_values):
 
     # if not ctx.triggered_id or not weapons:
     if spinner['display'] == 'none' or not weapons:
@@ -215,6 +218,8 @@ def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, com
         current_cfg['DAMAGE_LIMIT_FLAG'] = dmg_limit_flag
         current_cfg['DAMAGE_LIMIT'] = dmg_limit
         current_cfg['DAMAGE_VS_RACE'] = dmg_vs_race
+        current_cfg['CHANGE_THRESHOLD'] = relative_change / 100     # convert to fraction
+        current_cfg['STD_THRESHOLD'] = relative_std / 100           # convert to fraction
         current_cfg['TARGET_IMMUNITIES_FLAG'] = immunity_flag
 
         # Map immunity inputs back into a dictionary (normalize % -> fraction)
