@@ -85,7 +85,7 @@ class LegendEffect:
                         legend_dict_sums[dmg_type] = dmg_popped + self.attack_sim.damage_roll(num_dice, num_sides, flat_dmg)
 
         def get_immunity_factors():
-            physical_imm_factor_weapons = ['Club_Stone', 'Heavy Flail']
+            physical_imm_factor_weapons = ['Club_Stone']    # Crushing Blow legendary property, -5% physical immunity
             if self.weapon.name_purple in physical_imm_factor_weapons:
                 legend_imm_factors['physical'] = -0.05
 

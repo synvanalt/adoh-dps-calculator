@@ -456,7 +456,7 @@ def toggle_melee_params(combat_type):
 
     elif combat_type == 'melee':
         return (
-            [False] * n,                   # Keep OFF all melee switches
+            [dash.no_update] * n,         # Don't update the melee switches
             0,                            # Set mighty to 0
             [False] * n,                  # Enable all melee switches
             True                          # Disable mighty input
