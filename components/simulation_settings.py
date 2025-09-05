@@ -5,6 +5,7 @@ from typing import Literal
 
 
 persist_type: Literal["local", "session", "memory"] = "session"
+tooltip_delay = 500  # milliseconds
 
 
 def build_immunity_inputs(immunities_dict):
@@ -86,6 +87,7 @@ def build_simulation_settings(cfg):
                         "Target Armor Class (AC) to hit against.",
                         target='target-ac-input',  # must match the component's id
                         placement='right',  # top, bottom, left, right
+                        delay={'show': tooltip_delay},
                     ),
                 ], class_name='mt-4'),
 
@@ -109,6 +111,7 @@ def build_simulation_settings(cfg):
                         "Simulation will stop when either the max number of rounds or the convergence criteria are met.",
                         target='rounds-input',  # must match the component's id
                         placement='right',  # top, bottom, left, right
+                        delay={'show': tooltip_delay},
                     ),
                 ], class_name=''),
 
@@ -133,6 +136,7 @@ def build_simulation_settings(cfg):
                         "Simulation will stop when the set damage limit is reached, regardless of convergence.",
                         target='damage-limit-switch',  # must match the component's id
                         placement='left',  # top, bottom, left, right
+                        delay={'show': tooltip_delay},
                     ),
                 ], class_name='switcher'),
 
@@ -149,6 +153,7 @@ def build_simulation_settings(cfg):
                         "Simulation will include specific damage vs. race properties, if applicable.",
                         target='dmg-vs-race-switch',  # must match the component's id
                         placement='left',  # top, bottom, left, right
+                        delay={'show': tooltip_delay},
                     ),
                 ], class_name='switcher'),
 
@@ -174,6 +179,7 @@ def build_simulation_settings(cfg):
                         "Lower values require smaller changes for convergence to be detected.",
                         target='relative-change-input',  # must match the component's id
                         placement='right',  # top, bottom, left, right
+                        delay={'show': tooltip_delay},
                     ),
                 ], class_name=''),
 
@@ -199,6 +205,7 @@ def build_simulation_settings(cfg):
                         "Lower values demand more stability before the simulation is considered converged.",
                         target='relative-std-input',  # must match the component's id
                         placement='right',  # top, bottom, left, right
+                        delay={'show': tooltip_delay},
                     ),
                 ], class_name=''),
 

@@ -6,6 +6,7 @@ from typing import Literal
 
 def build_character_settings(cfg):
     persist_type: Literal["local", "session", "memory"] = "session"
+    tooltip_delay = 500  # milliseconds
 
     return dbc.Col([
         html.H4('Character Settings', className='mb-4'),
@@ -28,6 +29,7 @@ def build_character_settings(cfg):
                 "If dual-wielding, input the AB without the dual-wield penalty (it's managed per weapon and character size).",
                 target='ab-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -49,6 +51,7 @@ def build_character_settings(cfg):
                 "or when temporary AB bonuses are applied (Darts legend property).",
                 target='ab-capped-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -68,6 +71,7 @@ def build_character_settings(cfg):
                 "AB progression determines how many attacks per round you get at different AB thresholds.",
                 target='ab-prog-dropdown',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -91,6 +95,7 @@ def build_character_settings(cfg):
                 "Used for applying the correct dual-wield penalty.",
                 target='toon-size-dropdown',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -114,6 +119,7 @@ def build_character_settings(cfg):
                 "Used for applying the correct Strength-based bonus physical damage.",
                 target='combat-type-dropdown',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -133,6 +139,7 @@ def build_character_settings(cfg):
                 "Used for applying the correct Strength-based bonus physical damage for ammo-based ranged weapons.",
                 target='mighty-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -153,6 +160,7 @@ def build_character_settings(cfg):
                 "Enhancement damage bonus from weapon (ignored if ammo-based ranged weapons, overwritten if Scythe).",
                 target='enhancement-bonus-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -172,6 +180,7 @@ def build_character_settings(cfg):
                 "Used for applying the correct Strength-based bonus physical damage.",
                 target='str-mod-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name=''),
 
@@ -189,6 +198,7 @@ def build_character_settings(cfg):
                 "Multiplies Strength-based bonus physical damage by 2.",
                 target={'type': 'melee-switch', 'name': 'two-handed'},  # must match the component's id
                 placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name='switcher', id={'type': 'melee-row', 'name': 'two-handed'}),
 
@@ -205,6 +215,7 @@ def build_character_settings(cfg):
                 "Increases Critical Hit multiplier and range.",
                 target={'type': 'melee-switch', 'name': 'weaponmaster'},  # must match the component's id
                 placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name='switcher', id={'type': 'melee-row', 'name': 'weaponmaster'}),
 
@@ -221,6 +232,7 @@ def build_character_settings(cfg):
                 "Increases Critical Hit range.",
                 target='keen-switch',  # must match the component's id
                 placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name='switcher'),
 
@@ -237,6 +249,7 @@ def build_character_settings(cfg):
                 "Increases Critical Hit range.",
                 target='improved-crit-switch',  # must match the component's id
                 placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name='switcher'),
 
@@ -261,6 +274,7 @@ def build_character_settings(cfg):
                 "Overwrites base weapon properties with the selected weapon, relevant for shapeshifting only.",
                 target='shape-weapon-switch',  # must match the component's id
                 placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
             ),
         ], class_name='switcher'),
     ], xs=12, md=6, class_name='col-left')
