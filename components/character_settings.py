@@ -22,7 +22,13 @@ def build_character_settings(cfg):
                 value=cfg.AB,
                 persistence=True,
                 persistence_type=persist_type
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "AB input should include any attack penalties you may have (Flurry, Blinding Speed, Rapid Shot). "
+                "If dual-wielding, input the AB without the dual-wield penalty (it's managed per weapon and character size).",
+                target='ab-input',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         dbc.Row([
@@ -36,7 +42,14 @@ def build_character_settings(cfg):
                 value=cfg.AB_CAPPED,
                 persistence=True,
                 persistence_type=persist_type
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "Maximum AB (capped) that can be used for attack rolls. "
+                "Important for simulation to apply the correct AB when Scythe (+20 EB) is used, "
+                "or when temporary AB bonuses are applied (Darts legend property).",
+                target='ab-capped-input',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         dbc.Row([
@@ -50,7 +63,12 @@ def build_character_settings(cfg):
                 value="Classic 5APR",  # default value
                 persistence=True,
                 persistence_type=persist_type,
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "AB progression determines how many attacks per round you get at different AB thresholds.",
+                target='ab-prog-dropdown',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         dbc.Row([
@@ -68,7 +86,12 @@ def build_character_settings(cfg):
                 value=cfg.TOON_SIZE,
                 persistence=True,
                 persistence_type=persist_type,
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "Used for applying the correct dual-wield penalty.",
+                target='toon-size-dropdown',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         # Combat Settings
@@ -86,7 +109,12 @@ def build_character_settings(cfg):
                 value=cfg.COMBAT_TYPE,
                 persistence=True,
                 persistence_type=persist_type,
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "Used for applying the correct Strength-based bonus physical damage.",
+                target='combat-type-dropdown',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         dbc.Row([
@@ -100,7 +128,12 @@ def build_character_settings(cfg):
                 value=cfg.MIGHTY,
                 persistence=True,
                 persistence_type=persist_type,
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "Used for applying the correct Strength-based bonus physical damage for ammo-based ranged weapons.",
+                target='mighty-input',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         # Character Stats
@@ -115,7 +148,12 @@ def build_character_settings(cfg):
                 value=cfg.ENHANCEMENT_BONUS,
                 persistence=True,
                 persistence_type=persist_type,
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "Enhancement damage bonus from weapon (ignored if ammo-based ranged weapons, overwritten if Scythe).",
+                target='enhancement-bonus-input',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         dbc.Row([
@@ -129,7 +167,12 @@ def build_character_settings(cfg):
                 value=cfg.STR_MOD,
                 persistence=True,
                 persistence_type=persist_type,
-            ), xs=6, md=6)
+            ), xs=6, md=6),
+            dbc.Tooltip(
+                "Used for applying the correct Strength-based bonus physical damage.",
+                target='str-mod-input',  # must match the component's id
+                placement='right',  # top, bottom, left, right
+            ),
         ], class_name=''),
 
         # Two-Handed Weapon: combine switch+label into single Col using label kwarg
@@ -142,6 +185,11 @@ def build_character_settings(cfg):
                 persistence=True,
                 persistence_type=persist_type,
             ), xs=12, md=12),
+            dbc.Tooltip(
+                "Multiplies Strength-based bonus physical damage by 2.",
+                target={'type': 'melee-switch', 'name': 'two-handed'},  # must match the component's id
+                placement='left',  # top, bottom, left, right
+            ),
         ], class_name='switcher', id={'type': 'melee-row', 'name': 'two-handed'}),
 
         # Weaponmaster: single Col with label inside switch
@@ -153,6 +201,11 @@ def build_character_settings(cfg):
                 persistence=True,
                 persistence_type=persist_type,
             ), xs=12, md=12),
+            dbc.Tooltip(
+                "Increases Critical Hit multiplier and range.",
+                target={'type': 'melee-switch', 'name': 'weaponmaster'},  # must match the component's id
+                placement='left',  # top, bottom, left, right
+            ),
         ], class_name='switcher', id={'type': 'melee-row', 'name': 'weaponmaster'}),
 
         # Critical Hit Settings: Keen
@@ -164,6 +217,11 @@ def build_character_settings(cfg):
                 persistence=True,
                 persistence_type=persist_type,
             ), xs=12, md=12),
+            dbc.Tooltip(
+                "Increases Critical Hit range.",
+                target='keen-switch',  # must match the component's id
+                placement='left',  # top, bottom, left, right
+            ),
         ], class_name='switcher'),
 
         # Critical Hit Settings: Improved Crit
@@ -175,6 +233,11 @@ def build_character_settings(cfg):
                 persistence=True,
                 persistence_type=persist_type,
             ), xs=12, md=12),
+            dbc.Tooltip(
+                "Increases Critical Hit range.",
+                target='improved-crit-switch',  # must match the component's id
+                placement='left',  # top, bottom, left, right
+            ),
         ], class_name='switcher'),
 
         # Shape Weapon Override: switch and dropdown inline on md, stacked on xs
@@ -194,5 +257,10 @@ def build_character_settings(cfg):
                 persistence_type=persist_type,
                 style={'display': 'none'},
             ), xs=6, md=6),
+            dbc.Tooltip(
+                "Overwrites base weapon properties with the selected weapon, relevant for shapeshifting only.",
+                target='shape-weapon-switch',  # must match the component's id
+                placement='left',  # top, bottom, left, right
+            ),
         ], class_name='switcher'),
     ], xs=12, md=6, class_name='col-left')

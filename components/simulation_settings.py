@@ -82,6 +82,11 @@ def build_simulation_settings(cfg):
                         persistence=True,
                         persistence_type=persist_type,
                     ), xs=6, md=6),
+                    dbc.Tooltip(
+                        "Target Armor Class (AC) to hit against.",
+                        target='target-ac-input',  # must match the component's id
+                        placement='right',  # top, bottom, left, right
+                    ),
                 ], class_name='mt-4'),
 
                 # Number of rounds
@@ -100,6 +105,11 @@ def build_simulation_settings(cfg):
                         persistence=True,
                         persistence_type=persist_type,
                     ), xs=6, md=6),
+                    dbc.Tooltip(
+                        "Simulation will stop when either the max number of rounds or the convergence criteria are met.",
+                        target='rounds-input',  # must match the component's id
+                        placement='right',  # top, bottom, left, right
+                    ),
                 ], class_name=''),
 
                 # Damage limit (stop calculation on reach)
@@ -120,9 +130,9 @@ def build_simulation_settings(cfg):
                         style={'display': 'none'},
                     ), xs=6, md=6),
                     dbc.Tooltip(
-                        "Simulation will stop when the damage limit is reached",
+                        "Simulation will stop when the set damage limit is reached, regardless of convergence.",
                         target='damage-limit-switch',  # must match the component's id
-                        placement='top',  # top, bottom, left, right
+                        placement='left',  # top, bottom, left, right
                     ),
                 ], class_name='switcher'),
 
@@ -136,9 +146,9 @@ def build_simulation_settings(cfg):
                         persistence_type=persist_type,
                     ), xs=6, md=6),
                     dbc.Tooltip(
-                        "Simulation will include specific damage vs. race properties",
+                        "Simulation will include specific damage vs. race properties, if applicable.",
                         target='dmg-vs-race-switch',  # must match the component's id
-                        placement='top',  # top, bottom, left, right
+                        placement='left',  # top, bottom, left, right
                     ),
                 ], class_name='switcher'),
 
@@ -159,9 +169,11 @@ def build_simulation_settings(cfg):
                     ), xs=5, md=5),
                     dbc.Col(html.Span("%"), xs=1, md=1),
                     dbc.Tooltip(
-                        "Sets the maximum allowed relative mean change within a 15 rounds window. Lower values require smaller changes for convergence to be detected.",
+                        "Simulation will stop when both convergence criteria are met. "
+                        "Relative Change checks the mean DPS fluctuation within a 15 rounds window. "
+                        "Lower values require smaller changes for convergence to be detected.",
                         target='relative-change-input',  # must match the component's id
-                        placement='top',  # top, bottom, left, right
+                        placement='right',  # top, bottom, left, right
                     ),
                 ], class_name=''),
 
@@ -182,9 +194,11 @@ def build_simulation_settings(cfg):
                     ), xs=5, md=5),
                     dbc.Col(html.Span("%"), xs=1, md=1),
                     dbc.Tooltip(
-                        "Sets the maximum allowed standard deviation relative to the mean within a 15 rounds window. Lower values demand more stability before the simulation is considered converged.",
+                        "Simulation will stop when both convergence criteria are met. "
+                        "Relative STD checks the mean standard deviation relative to the mean within a 15 rounds window. "
+                        "Lower values demand more stability before the simulation is considered converged.",
                         target='relative-std-input',  # must match the component's id
-                        placement='top',  # top, bottom, left, right
+                        placement='right',  # top, bottom, left, right
                     ),
                 ], class_name=''),
 
