@@ -18,13 +18,17 @@ def build_additional_damage_rows(additional_damage_dict):
             persistence_type=persist_type,
         )
 
+        # Extract damage params from dict format
+        # val[1] example: {'fire_fw': [1, 4, 10]}
+        dmg_type_key, dmg_nums = next(iter(val[1].items()))
+
         # Prettifying the damage type names for better readability
-        if val[1][2] == 'fire_fw':
+        if dmg_type_key == 'fire_fw':
             dmg_type_name = 'Fire'
-        elif val[1][2] == 'sneak' or val[1][2] == 'death':
+        elif dmg_type_key in ('sneak', 'death'):
             dmg_type_name = 'Physical'
         else:
-            dmg_type_name = val[1][2].title()
+            dmg_type_name = dmg_type_key.title() if dmg_type_key else ''
 
         # Different layout for Flame Weapon, dice damage, and flat damage
         if key == 'Flame_Weapon' or key == 'Darkfire':
@@ -32,7 +36,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input1', 'name': key},
                     type='number',
-                    value=val[1][0],  # default as flat damage
+                    value=dmg_nums[0],  # num dice
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -43,7 +47,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input2', 'name': key},
                     type='number',
-                    value=val[1][1],  # default as percentage
+                    value=dmg_nums[1],  # sides
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -53,7 +57,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input3', 'name': key},
                     type='number',
-                    value=val[1][3],  # default as percentage
+                    value=dmg_nums[2] if len(dmg_nums) > 2 else 0,  # flat
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -62,12 +66,12 @@ def build_additional_damage_rows(additional_damage_dict):
                 html.Span(f"{dmg_type_name}", style={'marginLeft': '0.5em'}),
             ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
 
-        elif val[1][0] != 0:  # dice damage, e.g., [1, 4, 'pure']
+        elif dmg_nums and dmg_nums[0] != 0:  # dice damage
             widgets = html.Div([
                 dbc.Input(
                     id={'type': 'add-dmg-input1', 'name': key},
                     type='number',
-                    value=val[1][0],  # default as flat damage
+                    value=dmg_nums[0],  # num dice
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -78,7 +82,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input2', 'name': key},
                     type='number',
-                    value=val[1][1],  # default as percentage
+                    value=dmg_nums[1],  # sides
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -88,7 +92,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input3', 'name': key},
                     type='number',
-                    value=val[1][3],  # default as percentage
+                    value=dmg_nums[2] if len(dmg_nums) > 2 else 0,  # flat
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -97,12 +101,12 @@ def build_additional_damage_rows(additional_damage_dict):
                 ),
             ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
 
-        else:  # flat damage, e.g., [0, 10, 'physical']
+        else:  # flat damage
             widgets = html.Div([
                 dbc.Input(
                     id={'type': 'add-dmg-input1', 'name': key},
                     type='number',
-                    value=val[1][0],  # default as flat damage
+                    value=dmg_nums[0] if dmg_nums is not None else 0,  # num dice (hidden)
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -112,7 +116,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input2', 'name': key},
                     type='number',
-                    value=val[1][1],  # default as percentage
+                    value=dmg_nums[1] if dmg_nums is not None else 0,  # sides / flat amount
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,
@@ -123,7 +127,7 @@ def build_additional_damage_rows(additional_damage_dict):
                 dbc.Input(
                     id={'type': 'add-dmg-input3', 'name': key},
                     type='number',
-                    value=val[1][3],  # default as percentage
+                    value=dmg_nums[2] if (dmg_nums and len(dmg_nums) > 2) else 0,  # flat
                     step=1,
                     persistence=True,
                     persistence_type=persist_type,

@@ -131,7 +131,7 @@ class AttackSimulator:
         :return: int, Damage roll results
         """
         if num_dice == 0:  # 0 num_dice resembles flat damage, i.e., no roll is performed ("Massive Critical: 80" is flat)
-            return num_sides
+            return flat_dmg
         else:
             total_dmg_roll = 0
             for i in range(num_dice):
@@ -143,7 +143,7 @@ class AttackSimulator:
         """
         This method is relevant only for the ROLL implementation
         :param damage_sums: Dictionary holding a sum of the total damage inflicted, per damage type, e.g., {'divine': 10}
-        :param imm_factors: Dictionary holding the target immunity factors (for example -10% due to legend property
+        :param imm_factors: Dictionary holding the target immunity factors (for example -0.1 (10%) due to legend property
         :return: Damage to be inflicted after applying target immunities, e.g., if 10% divine, the final damage will be 9
         """
         target_imms = deepcopy(self.cfg.TARGET_IMMUNITIES)

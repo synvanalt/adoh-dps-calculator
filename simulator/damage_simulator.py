@@ -46,35 +46,67 @@ class DamageSimulator:
 
     def collect_damage_from_all_sources(self):
         """Collect damage information from all sources and organize it into dictionaries"""
-        damage_sources = self.weapon.damage_sources()
+        damage_sources = self.weapon.aggregate_damage_sources()
 
-        for dmg_source in damage_sources.values():
-            for dmg in dmg_source:
-                dmg_copy = dmg.copy()   # Create a copy of the damage list to avoid modifying the original
-                dmg_type_name = dmg_copy[2] # Get the damage type name (always at index 2)
+        for src_name, dmg_source in damage_sources.items():
+            if isinstance(dmg_source, dict):
+                for key, val in dmg_source.items():
+                    # Handling purple legendary damage specially
+                    if key == 'legendary' and isinstance(val, dict):
+                        # val is { 'proc': 0.05, 'fire': [1, 30], ... , 'effect': 'sunder' }
+                        for leg_key, leg_val in val.items():
+                            if leg_key in ('proc', 'effect'):
+                                self.dmg_dict_legend[leg_key] = leg_val  # Store proc and effect directly
+                                continue
+                            # leg_val expected to be [dice, sides] or [dice, sides, flat]
+                            dice = leg_val[0]
+                            sides = leg_val[1]
+                            flat = leg_val[2] if len(leg_val) > 2 else None
+                            dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
+                            dmg_list = self.dmg_dict_legend.setdefault(leg_key, [])
+                            dmg_list.append(dmg_entry)
 
-                if dmg_type_name == 'legendary':
-                    actual_dmg_type = dmg_copy[3]   # For legendary damage, get the actual damage type (at index 3)
-                    dmg_entry = [dmg_copy[0], dmg_copy[1], dmg_copy[4]]  # Create damage entry with dice and proc-type, without the 'legendary' and dmg-type
-                    dmg_list = self.dmg_dict_legend.setdefault(actual_dmg_type, []) # Add to legend dictionary
-                    dmg_list.append(dmg_entry)
+                    # vs_race_* mapping where val is a dict {actual_type: [dice, sides]}
+                    elif 'vs_race' in key and isinstance(val, dict):
+                        if not self.cfg.DAMAGE_VS_RACE: # Check config DAMAGE_VS_RACE flag
+                            continue                    # Ignore damage entry if flag off
+                        actual_type, nums = next(iter(val.items()))
+                        dice = nums[0]
+                        sides = nums[1]
+                        flat = nums[2] if len(nums) > 2 else None
+                        dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
+                        dmg_list = self.dmg_dict.setdefault(actual_type, [])
+                        dmg_list.append(dmg_entry)
 
-                elif "vs_race" in dmg_type_name:
-                    if self.cfg.DAMAGE_VS_RACE:
-                        actual_dmg_type = dmg_copy[3]
-                        dmg_entry = [dmg_copy[0], dmg_copy[1]]
-                        dmg_list = self.dmg_dict.setdefault(actual_dmg_type, [])  # Add to regular dictionary
+                    # Regular damage entries, e.g., 'fire': [dice, sides] or 'physical': [dice, sides, flat]
+                    else:
+                        dice = val[0]
+                        sides = val[1]
+                        flat = val[2] if len(val) > 2 else None
+                        dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
+                        dmg_list = self.dmg_dict.setdefault(key, [])
+                        dmg_list.append(dmg_entry)
+
+            # Handling additional damage entries that are lists of dicts, e.g., [{'fire_fw': [1, 4, 10]}, {'acid': [1, 6]}]
+            elif isinstance(dmg_source, list):
+                for item in dmg_source:
+                    if isinstance(item, dict):
+                        # Handling additional damage entries that are dicts, e.g., {'fire_fw': [1, 4, 10]}
+                        dmg_type_key, dmg_nums = next(iter(item.items()))
+                        dice = dmg_nums[0]
+                        sides = dmg_nums[1]
+                        flat = dmg_nums[2] if len(dmg_nums) > 2 else None
+                        dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
+                        dmg_list = self.dmg_dict.setdefault(dmg_type_key, [])
                         dmg_list.append(dmg_entry)
                     else:
-                        continue    # Skip this damage entry
+                        # Handling unexpected formats gracefully
+                        print(f"Warning: Unexpected damage source format in list: {item}")
+                        continue
 
-                else:
-                    if len(dmg_copy) == 4:  # If there's flat damage (4th element), create damage entry with dice and flat damage
-                        dmg_entry = [dmg_copy[0], dmg_copy[1], dmg_copy[3]]
-                    else:   # Create damage entry with just the dice numbers
-                        dmg_entry = [dmg_copy[0], dmg_copy[1]]
-                    dmg_list = self.dmg_dict.setdefault(dmg_type_name, [])  # Add to regular dictionary
-                    dmg_list.append(dmg_entry)
+            else:
+                print(f"Warning: Unexpected damage source format: {dmg_source}")
+                continue
 
     def convergence(self, round_num) -> bool:
         dps_window_mean = statistics.mean(self.dps_window)
@@ -262,8 +294,9 @@ class DamageSimulator:
                 dmg_popped = damage_sums.pop(dmg_key, 0)
                 num_dice = dmg_sublist[0]
                 num_sides = dmg_sublist[1]
-                flat_dmg = dmg_sublist.pop(2) if -len(dmg_sublist) <= 2 <= len(dmg_sublist)-1 else 0    # Get flat damage if it exists, otherwise 0
-                damage_sums[dmg_key] = dmg_popped + self.attack_sim.damage_roll(num_dice, num_sides, flat_dmg)
+                flat_dmg = dmg_sublist[2] if len(dmg_sublist) > 2 else 0    # Get flat damage if it exists, otherwise 0
+                dmg_roll_results = self.attack_sim.damage_roll(num_dice, num_sides, flat_dmg)
+                damage_sums[dmg_key] = dmg_popped + dmg_roll_results
 
         # Finally, apply target immunities and vulnerabilities
         damage_sums = self.attack_sim.damage_immunity_reduction(damage_sums, imm_factors)

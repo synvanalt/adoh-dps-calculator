@@ -80,15 +80,15 @@ app.layout = dbc.Container([
 
                         # Additional damage
                         build_additional_damage_panel(cfg),
-                    ], className='mb-4', style={'display': 'flex', 'alignItems': 'flex-start'}),
+                    ], class_name='mb-4', style={'display': 'flex', 'alignItems': 'flex-start'}),
 
                     html.Hr(),
 
                     # Simulation settings
                     dbc.Row([
                         build_simulation_settings(cfg)
-                    ], className='mb-0', style={'display': 'flex', 'alignItems': 'flex-start'})
-                ], fluid=True, className='border-bottom rounded-bottom border-start border-end p-5 mb-4'),
+                    ], class_name='mb-0', style={'display': 'flex', 'alignItems': 'flex-start'})
+                ], fluid=True, class_name='border-bottom rounded-bottom border-start border-end p-5 mb-4'),
             ]),
 
             # Tab 2: Results
@@ -230,7 +230,7 @@ def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, com
 
         # Update additional damage sources
         current_cfg['ADDITIONAL_DAMAGE'] = {
-            key: [add_dmg_state[idx], [add_dmg1[idx], add_dmg2[idx], val[1][2], add_dmg3[idx]]]
+            key: [add_dmg_state[idx], {next(iter(val[1].keys())): [add_dmg1[idx], add_dmg2[idx], add_dmg3[idx]]}]
             for idx, (key, val) in enumerate(cfg.ADDITIONAL_DAMAGE.items())
         }
 
@@ -267,7 +267,7 @@ def update_results(results_dict):
                     dbc.Col([
                         html.H6('Summary', className='mb-3'),
                         html.Pre(results["summary"], className='border rounded p-3 bg-dark-subtle', style={'overflow-x': 'auto'}),
-                    ], className='mb-4'),
+                    ], class_name='mb-4'),
                 ]),
                 dbc.Row([
                     # Attack Statistics - full width on mobile, 4 cols on desktop
@@ -287,9 +287,9 @@ def update_results(results_dict):
                                              html.Td(f'{results["legend_proc_rate_actual"]:.1f}%'),
                                              html.Td(f'{results["legend_proc_rate_theoretical"]:.1f}%')]),
                                 ])
-                            ], bordered=True, hover=True, striped=True, size='sm', className='table-responsive')
+                            ], bordered=True, hover=True, striped=True, size='sm', class_name='table-responsive')
                         ], style={'overflow-x': 'auto'})
-                    ], xs=12, md=4, className='mb-4'),
+                    ], xs=12, md=4, class_name='mb-4'),
 
                     # Hit Rate per Attack - full width on mobile, 4 cols on desktop
                     dbc.Col([
@@ -304,9 +304,9 @@ def update_results(results_dict):
                                         html.Td(f'{results["hit_rate_per_attack_theoretical"][i]:.1f}%')
                                     ]) for i in range(len(results["hits_per_attack"]))
                                 ])
-                            ], bordered=True, hover=True, striped=True, size='sm', className='table-responsive')
+                            ], bordered=True, hover=True, striped=True, size='sm', class_name='table-responsive')
                         ], style={'overflow-x': 'auto'})
-                    ], xs=12, md=4, className='mb-4'),
+                    ], xs=12, md=4, class_name='mb-4'),
 
                     # Crit Rate per Attack - full width on mobile, 4 cols on desktop
                     dbc.Col([
@@ -321,12 +321,12 @@ def update_results(results_dict):
                                         html.Td(f'{results["crit_rate_per_attack_theoretical"][i]:.1f}%')
                                     ]) for i in range(len(results["crits_per_attack"]))
                                 ])
-                            ], bordered=True, hover=True, striped=True, size='sm', className='table-responsive')
+                            ], bordered=True, hover=True, striped=True, size='sm', class_name='table-responsive')
                         ], style={'overflow-x': 'auto'})
-                    ], xs=12, md=4, className='mb-4')
-                ], className='gx-4')  # Add horizontal spacing between columns
+                    ], xs=12, md=4, class_name='mb-4')
+                ], class_name='gx-4', style={'alignItems': 'flex-start'})  # Add horizontal spacing between columns
             ])
-        ], className='mb-4')
+        ], class_name='mb-4')
         detailed_results.append(detailed_weapon_results)
 
     # Create comparative table - made responsive
@@ -352,7 +352,7 @@ def update_results(results_dict):
             bordered=True,
             hover=True,
             striped=True,
-            className='table-responsive mb-4',
+            class_name='table-responsive mb-4',
         )
     ], style={'overflow-x': 'auto'})
 

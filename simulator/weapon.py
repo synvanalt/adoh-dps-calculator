@@ -12,21 +12,17 @@ class Weapon:
         if self.name_base not in WEAPON_PROPERTIES:
             raise ValueError(f"Weapon '{self.name_base}' not found in WEAPON_PROPERTIES")
 
-        properties = WEAPON_PROPERTIES[self.name_base]  # Example: 'Halberd': {'dmg': [1, 10, 's&p'], 'threat': 20, 'multiplier': 3, 'size': 'L'},
+        # Load weapon properties from the database
+        # Example: 'Halberd': {'dmg': [1, 10, 'slashing & piercing'], 'threat': 20, 'multiplier': 3, 'size': 'L'},
+        properties = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON] if self.cfg.SHAPE_WEAPON_OVERRIDE else WEAPON_PROPERTIES[self.name_base]
 
-        if self.cfg.SHAPE_WEAPON_OVERRIDE:
-            self.dmg = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON]['dmg'].copy()  # Use copy to prevent modifying the original
-            self.threat_base = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON]['threat']
-            self.multiplier_base = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON]['multiplier']
-            self.size = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON]['size']
+        dice = properties['dmg'][0]
+        sides = properties['dmg'][1]
+        self.dmg = {'physical': [dice, sides, 0]}   # To fit the convention of [dice, sides, flat]
+        self.threat_base = properties['threat']
+        self.multiplier_base = properties['multiplier']
+        self.size = properties['size']
 
-        else:  # Read base weapon properties from weapons_db.py
-            self.dmg = properties['dmg'].copy()  # Use copy to prevent modifying the original
-            self.threat_base = properties['threat']
-            self.multiplier_base = properties['multiplier']
-            self.size = properties['size']
-
-        self.dmg[2] = 'physical'  # Replace slash\bludg\pierce with just 'physical' for compatibility with damage sources
         self.crit_threat = self.get_crit_threat()
         self.crit_multiplier = self.crit_multiplier()
 
@@ -68,7 +64,7 @@ class Weapon:
             enhancement_dmg = 0
         else:
             enhancement_dmg = self.cfg.ENHANCEMENT_BONUS
-        return [0, enhancement_dmg, 'physical']     # To fit the convention of [0, 10, 'physical'] for 10-flat dmg
+        return {'physical': [0, 0, enhancement_dmg]}    # To fit the convention of [dice, sides, flat]
 
     def strength_bonus(self):
         """
@@ -88,9 +84,9 @@ class Weapon:
         else:
             raise ValueError(f"Invalid combat type: {self.cfg.COMBAT_TYPE}. Expected 'melee' or 'ranged'.")
 
-        return [0, str_dmg, 'physical']
+        return {'physical': [0, 0, str_dmg]}    # To fit the convention of [dice, sides, flat]
 
-    def damage_sources(self):
+    def aggregate_damage_sources(self):
         """
         :return: A dictionary of all damage sources (base weapon damage, strength bonus damage, etc.)
         Each item in the dictionary should be a list, and within it a sublist per damage type.
@@ -98,10 +94,10 @@ class Weapon:
         This master-list will later be looped over when damage is calculated.
         """
         dmg_src_dict = {
-            'base_dmg': [self.dmg],
+            'base_dmg': self.dmg,
             'purple_dmg': PURPLE_WEAPONS[self.name_purple],
-            'enhancement_dmg': [self.enhancement_bonus()],
-            'str_dmg': [self.strength_bonus()],
+            'enhancement_dmg': self.enhancement_bonus(),
+            'str_dmg': self.strength_bonus(),
             'additional_dmg': [v[1] for v in self.cfg.ADDITIONAL_DAMAGE.values() if v[0] is True],
         }
         return dmg_src_dict
@@ -111,9 +107,15 @@ class Weapon:
         :return: The theoretical chance to trigger a legend proc, based on the weapon's legend property
         """
         legend_proc_rate = 0.0
-        for dmg_type_list in PURPLE_WEAPONS[self.name_purple]:
-            if dmg_type_list[2] == 'legendary':
-                legend_proc_rate = dmg_type_list[4] if type(dmg_type_list[4]) is float else crit_rate/100
-                break
+        purple_props = PURPLE_WEAPONS.get(self.name_purple, {})
+        legendary = purple_props.get('legendary') if isinstance(purple_props, dict) else None
+        if legendary:
+            proc = legendary.get('proc')
+            if isinstance(proc, (float, int)):
+                legend_proc_rate = float(proc)
+            elif isinstance(proc, str) and proc == 'on_crit':
+                legend_proc_rate = crit_rate / 100
+            else:
+                legend_proc_rate = 0.0
 
         return legend_proc_rate

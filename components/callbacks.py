@@ -56,20 +56,57 @@ def register_update_reference_info(app):
         # Format purple weapon information for all selected weapons
         purple_weapon_props = []
         for weapon in selected_weapons:
-            properties = PURPLE_WEAPONS.get(weapon, "Weapon not found")
+            properties = PURPLE_WEAPONS.get(weapon, {})
             props_name = f"{weapon}:"
             props_dmg = []
-            for dmg in properties:
-                if 'legendary' in dmg[2].lower():
-                    legend_proc_type = f"{int(dmg[4] * 100)}%" if type(dmg[4]) in [float, int] else "On-Crit"
-                    if 'effect' in dmg[3].lower():
-                        props_dmg.append(f"Legendary {legend_proc_type}: {dmg[3].replace('_', ' ').title()}")
-                    else:
-                        props_dmg.append(f"Legendary {legend_proc_type}: {dmg[0]}d{dmg[1]} {dmg[3].title()}")
-                elif dmg[0] == 0:   # Not dice, just flat damage
-                    props_dmg.append(f"{dmg[1]} {dmg[2].title()}")
+
+            # properties is now a dict mapping dmg-type -> params
+            for key, val in properties.items():
+                if key == 'legendary' and isinstance(val, dict):
+                    proc = val.get('proc')
+                    proc_str = f"{int(proc * 100)}%" if isinstance(proc, (int, float)) else ("On-Crit" if proc == 'on_crit' else str(proc))
+                    # handle effect key separately
+                    for leg_key, leg_val in val.items():
+                        if leg_key == 'proc':
+                            continue
+                        if leg_key == 'effect':
+                            props_dmg.append(f"Legendary {proc_str}: {leg_val.replace('_', ' ').title()}")
+                            continue
+                        # leg_val expected to be [dice, sides] or [dice, sides, flat]
+                        dice = leg_val[0]
+                        sides = leg_val[1]
+                        flat = leg_val[2] if len(leg_val) > 2 else None
+                        if dice == 0:
+                            props_dmg.append(f"{sides} {leg_key.title()} (Legendary {proc_str})")
+                        else:
+                            if flat:
+                                props_dmg.append(f"Legendary {proc_str}: {dice}d{sides}+{flat} {leg_key.title()}")
+                            else:
+                                props_dmg.append(f"Legendary {proc_str}: {dice}d{sides} {leg_key.title()}")
+
                 else:
-                    props_dmg.append(f"{dmg[0]}d{dmg[1]} {dmg[2].title()}")
+                    # val can be a list [dice, sides]/[dice, sides, flat] or dict (vs_race mapping)
+                    if "vs_race" in key and isinstance(val, dict):
+                        # vs_race entry; val is {actual_type: [dice, sides]}
+                        for actual_type, nums in val.items():
+                            dice = nums[0]
+                            sides = nums[1]
+                            if dice == 0:
+                                props_dmg.append(f"{sides} {actual_type.title()} (vs. race)")
+                            else:
+                                props_dmg.append(f"{dice}d{sides} {actual_type.title()} (vs. race)")
+                    else:
+                        dice = val[0]
+                        sides = val[1]
+                        flat = val[2] if len(val) > 2 else None
+                        if dice == 0:
+                            props_dmg.append(f"{sides} {key.title()}")
+                        else:
+                            if flat:
+                                props_dmg.append(f"{dice}d{sides}+{flat} {key.title()}")
+                            else:
+                                props_dmg.append(f"{dice}d{sides} {key.title()}")
+
             props_dmg = ", ".join(props_dmg)
             purple_weapon_props.append((props_name, str(props_dmg)))
 
@@ -161,9 +198,9 @@ def register_reset_to_defaults(app):
                 default_cfg.SHAPE_WEAPON_OVERRIDE,
                 default_cfg.SHAPE_WEAPON,
                 [val[0] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
-                [val[1][0] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
-                [val[1][1] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
-                [val[1][3] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
+                [next(iter(val[1].values()))[0] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
+                [next(iter(val[1].values()))[1] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
+                [next(iter(val[1].values()))[2] for val in default_cfg.ADDITIONAL_DAMAGE.values()],
                 default_cfg.DEFAULT_WEAPONS,
                 default_cfg.TARGET_AC,
                 default_cfg.ROUNDS,

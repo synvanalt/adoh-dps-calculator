@@ -50,7 +50,7 @@ class LegendEffect:
             ** Heavy Flail's +5 Physical damage
             ** Club's reduction of Physical immunities (damage vulnerability)
 
-        :param legend_dict: dict, summary of damage dice per type, e.g., {'fire': [2, 6, 'critical']}
+        :param legend_dict: dict, summary of damage dice per type, e.g., {'proc': 0.05, 'fire': [1, 30, 7], ... , 'effect': 'sunder'}
         :param crit_multiplier: int, the critical multiplier, 1 if ordinary hit, >1 if critical hit
         :return:
             legend_dict_sums: dict, summary of damage to inflict per type, e.g., {'cold': 7, 'pure': 11}
@@ -65,23 +65,27 @@ class LegendEffect:
         if not legend_dict:  # If the dict is empty, return empty results
             return legend_dict_sums, legend_dmg_common, legend_imm_factors
 
-        first_item = next(iter(legend_dict.items()))
-        legend_proc_identifier = first_item[1][0][2]
-        legend_proc_type = 'chance_on_hit' if type(legend_proc_identifier) is float else 'critical_hit'
+        # Legend entries are stored as { 'proc': 0.05, 'fire': [1, 30, 7], ... , 'effect': 'sunder' }
+        proc = legend_dict['proc'] if 'proc' in legend_dict.keys() else None
 
         def add_legend_dmg():
             if self.weapon.name_purple == 'Heavy Flail':  # H.Flail 5 bludg damage is "common"
                 hflail_phys_dmg = deepcopy(legend_dict['physical'][0])
+                # hflail_phys_dmg is [dice, sides, proc] or [dice, sides, flat, proc]
                 legend_dmg_common.extend(hflail_phys_dmg)
-                legend_dmg_common.pop(-1)  # Remove the item that stores the chance to trigger on hit
+                # remove proc (last element) and append damage type
+                legend_dmg_common.pop(-1)
                 legend_dmg_common.append('physical')
             else:   # All other weapons
-                for dmg_type, dmg_list in legend_dict.items():
-                    for dmg_sublist in dmg_list:
+                 for dmg_type, dmg_list in legend_dict.items():
+                     if dmg_type in ('proc', 'effect'):
+                         continue
+                     for dmg_sublist in dmg_list:
+                        # dmg_sublist may be [dice, sides] or [dice, sides, flat]
                         dmg_popped = legend_dict_sums.pop(dmg_type, 0)
                         num_dice = dmg_sublist[0]
                         num_sides = dmg_sublist[1]
-                        flat_dmg = 0  # Purple properties do not have flat damage component
+                        flat_dmg = dmg_sublist[2] if len(dmg_sublist) > 2 else 0
                         legend_dict_sums[dmg_type] = dmg_popped + self.attack_sim.damage_roll(num_dice, num_sides, flat_dmg)
 
         def get_immunity_factors():
@@ -89,8 +93,8 @@ class LegendEffect:
             if self.weapon.name_purple in physical_imm_factor_weapons:
                 legend_imm_factors['physical'] = -0.05
 
-        if legend_proc_type == 'chance_on_hit':  # Legendary property triggers on-hit, by percentage
-            if self.legend_proc(legend_proc_identifier): # Check if the legendary property is triggered
+        if isinstance(proc, (int, float)):  # Legendary property triggers on-hit, by percentage
+            if self.legend_proc(proc): # Check if the legendary property is triggered
                 add_legend_dmg()
                 get_immunity_factors()
 
@@ -99,8 +103,11 @@ class LegendEffect:
                 add_legend_dmg() if self.weapon.name_purple == 'Heavy Flail' else None
                 get_immunity_factors()
 
-        elif legend_proc_type == 'critical_hit' and crit_multiplier > 1:  # Legendary property triggers by crit-hit
+        elif isinstance (proc, str) and crit_multiplier > 1:    # Legendary property triggers by crit-hit
             self.stats.legend_procs += 1
             add_legend_dmg()
+
+        else:
+            raise ValueError(f"Invalid legend 'proc' entry: {proc}. Expected float (chance_on_hit) or str (critical_hit).")
 
         return legend_dict_sums, legend_dmg_common, legend_imm_factors

@@ -60,86 +60,24 @@ class Config:
     SHAPE_WEAPON_OVERRIDE: bool = False
     SHAPE_WEAPON: str = "Scythe"
 
-    # EXTRA DAMAGE SOURCES
+    # EXTRA DAMAGE SOURCES: name: [enabled, {damage_type: [dice, sides, flat]}]
     ADDITIONAL_DAMAGE: Dict[str, Any] = field(default_factory=lambda: {
-        "Flame_Weapon":     [True,  [1, 4, "fire_fw", 10]],
-        "Darkfire":         [False, [1, 6, "fire_fw", 10]],
-        "Weapon_Spec":      [False, [0, 2, "physical", 0]],
-        "Epic_Weapon_Spec": [False, [0, 4, "physical", 0]],
-        "Blade_Thirst":     [False, [0, 6, "physical", 0]],
-        "Favored_Enemy":    [False, [0, 9, "physical", 0]],
-        "Enchant_Arrow":    [False, [0, 15, "physical", 0]],
-        "Bard_Song":        [False, [0, 3, "physical", 0]],
-        "Divine_Favor":     [False, [0, 5, "magical", 0]],
-        "Divine_Might":     [False, [0, 11, "divine", 0]],
-        "Divine_Wrath":     [False, [0, 13, "pure", 0]],
-        "Bane_of_Enemies":  [False, [2, 6, "physical", 0]],
-        "Sneak_Attack":     [False, [5, 6, "sneak", 0]],
-        "Death_Attack":     [False, [3, 6, "death", 0]],
-        "Pure_Set_Bonus":   [False, [1, 4, "pure", 0]],
+        "Flame_Weapon":     [True,  {'fire_fw':     [1, 4, 10]}],
+        "Darkfire":         [False, {'fire_fw':     [1, 6, 10]}],
+        "Weapon_Spec":      [False, {'physical':    [0, 0, 2]}],
+        "Epic_Weapon_Spec": [False, {'physical':    [0, 0, 4]}],
+        "Blade_Thirst":     [False, {'physical':    [0, 0, 6]}],
+        "Favored_Enemy":    [False, {'physical':    [0, 0, 9]}],
+        "Enchant_Arrow":    [False, {'physical':    [0, 0, 15]}],
+        "Bard_Song":        [False, {'physical':    [0, 0, 3]}],
+        "Divine_Favor":     [False, {'magical':     [0, 0, 5]}],
+        "Divine_Might":     [False, {'divine':      [0, 0, 11]}],
+        "Divine_Wrath":     [False, {'pure':        [0, 0, 13]}],
+        "Bane_of_Enemies":  [False, {'physical':    [2, 6, 0]}],
+        "Sneak_Attack":     [False, {'sneak':       [5, 6, 0]}],
+        "Death_Attack":     [False, {'death':       [3, 6, 0]}],
+        "Pure_Set_Bonus":   [False, {'pure':        [1, 4, 0]}],
     })
-
-WEAPONS_TO_RUN = {
-    # # LARGE WEAPONS:
-    # 'Halberd':              {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Heavy Flail':          {'AB_MOD': None, 'AB_PROG': None, 'TWO_HANDED': True},
-    'Greataxe':             {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Greatsword_Desert':    {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Greatsword_Legion':       {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Greatsword_Tyr':       {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Scythe':               {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Spear':                {'AB_MOD': None, 'AB_PROG': None, 'TWO_HANDED': True},
-    # 'Trident_Fire':         {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    # 'Trident_Ice':          {'AB_MOD': None, 'AB_PROG': 'classic_5apr', 'TWO_HANDED': True},
-    #
-    # # DOUBLE-SIDED WEAPONS:
-    # 'Dire Mace':        {'AB_MOD': None, 'AB_PROG': None},
-    # 'Double Axe':       {'AB_MOD': None, 'AB_PROG': None},
-    # 'Two-Bladed Sword': {'AB_MOD': None, 'AB_PROG': None},
-    #
-    # # RANGED WEAPONS - THROWING:
-    # 'Darts':            {'AB_MOD': None, 'AB_PROG': None},
-    # 'Throwing Axes':    {'AB_MOD': None, 'AB_PROG': None},
-    #
-    # # RANGED WEAPONS - AMMO-BASED:
-    # 'Heavy Crossbow':   {'AB_MOD': None, 'AB_PROG': None},
-    # 'Light Crossbow':   {'AB_MOD': None, 'AB_PROG': None},
-    # 'Longbow':          {'AB_MOD': None, 'AB_PROG': None},
-    # 'Shortbow':         {'AB_MOD': None, 'AB_PROG': None},
-    # 'Sling':            {'AB_MOD': None, 'AB_PROG': None},
-    #
-    # # MONK WEAPONS:
-    # 'Gloves_Shandy':    {'AB_MOD': None, 'AB_PROG': None},
-    # 'Gloves_Adam':      {'AB_MOD': None, 'AB_PROG': None},
-    # 'Kama':             {'AB_MOD': None, 'AB_PROG': 'monk_kama_dw_flurry'},
-    # 'Quarterstaff':     {'AB_MOD': None, 'AB_PROG': None, 'TWO_HANDED': None},
-    # 'Shuriken':         {'AB_MOD': None, 'AB_PROG': None},
-    #
-    # MEDIUM WEAPONS:
-    # 'Bastard Sword':    {'AB_MOD': None, 'AB_PROG': None},
-    # 'Battleaxe':        {'AB_MOD': None, 'AB_PROG': None},
-    # 'Dwarven Waraxe':   {'AB_MOD': None, 'AB_PROG': None},
-    # 'Katana':           {'AB_MOD': None, 'AB_PROG': None},
-    # 'Light Flail':      {'AB_MOD': None, 'AB_PROG': None},
-    # 'Longsword':        {'AB_MOD': None, 'AB_PROG': None},
-    # 'Morningstar':      {'AB_MOD': None, 'AB_PROG': None},
-    # 'Rapier':           {'AB_MOD': None, 'AB_PROG': None},
-    # 'Scimitar':         {'AB_MOD': None, 'AB_PROG': None},
-    # 'Warhammer':        {'AB_MOD': None, 'AB_PROG': None},
-    #
-    # # SMALL\TINY WEAPONS:
-    # 'Club':                 {'AB_MOD': None, 'AB_PROG': None},
-    # 'Dagger_LW':            {'AB_MOD': None, 'AB_PROG': None},
-    # 'Dagger_PK':            {'AB_MOD': None, 'AB_PROG': None},
-    # 'Handaxe':              {'AB_MOD': None, 'AB_PROG': None},
-    # 'Kukri':                {'AB_MOD': None, 'AB_PROG': None},
-    # 'Light Hammer':         {'AB_MOD': None, 'AB_PROG': None},
-    # 'Mace':                 {'AB_MOD': None, 'AB_PROG': None},
-    # 'Shortsword_Cleaver':   {'AB_MOD': None, 'AB_PROG': None},
-    # 'Shortsword_Adam':      {'AB_MOD': None, 'AB_PROG': None},
-    # 'Sickle':               {'AB_MOD': None, 'AB_PROG': None},
-    # 'Whip':                 {'AB_MOD': None, 'AB_PROG': None},
-}
 
 
 if __name__ == '__main__':
