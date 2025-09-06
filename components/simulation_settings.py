@@ -40,8 +40,8 @@ def build_immunity_inputs(immunities_dict):
 
 def build_simulation_settings(cfg):
     # Create a list of valid weapons that exist in both dictionaries
-    valid_weapons = [k for k in PURPLE_WEAPONS.keys()
-                     if k.split('_')[0] in WEAPON_PROPERTIES]
+    valid_weapons = sorted([k for k in PURPLE_WEAPONS.keys()
+                     if k.split('_')[0] in WEAPON_PROPERTIES])
 
     simulation_settings = dbc.Col([
         dbc.Row([
