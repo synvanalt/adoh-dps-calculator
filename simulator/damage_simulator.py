@@ -37,12 +37,14 @@ class DamageSimulator:
         self.dps_window = deque(maxlen=self.window_size)
         self.dps_rolling_avg = []
         self.dps_per_round = []
+        self.cumulative_damage_per_round = []
 
         # Convergence tracking - crit immune
         self.total_dmg_crit_imm = 0
         self.dps_crit_imm_window = deque(maxlen=self.window_size)
         self.dps_crit_imm_rolling_avg = []
         self.dps_crit_imm_per_round = []
+        self.cumulative_damage_by_type = {}
 
     def collect_damage_from_all_sources(self):
         """Collect damage information from all sources and organize it into dictionaries"""
@@ -63,8 +65,7 @@ class DamageSimulator:
                             sides = leg_val[1]
                             flat = leg_val[2] if len(leg_val) > 2 else None
                             dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
-                            dmg_list = self.dmg_dict_legend.setdefault(leg_key, [])
-                            dmg_list.append(dmg_entry)
+                            self.dmg_dict_legend.setdefault(leg_key, []).append(dmg_entry)
 
                     # vs_race_* mapping where val is a dict {actual_type: [dice, sides]}
                     elif 'vs_race' in key and isinstance(val, dict):
@@ -75,8 +76,7 @@ class DamageSimulator:
                         sides = nums[1]
                         flat = nums[2] if len(nums) > 2 else None
                         dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
-                        dmg_list = self.dmg_dict.setdefault(actual_type, [])
-                        dmg_list.append(dmg_entry)
+                        self.dmg_dict.setdefault(actual_type, []).append(dmg_entry)
 
                     # Regular damage entries, e.g., 'fire': [dice, sides] or 'physical': [dice, sides, flat]
                     else:
@@ -84,8 +84,7 @@ class DamageSimulator:
                         sides = val[1]
                         flat = val[2] if len(val) > 2 else None
                         dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
-                        dmg_list = self.dmg_dict.setdefault(key, [])
-                        dmg_list.append(dmg_entry)
+                        self.dmg_dict.setdefault(key, []).append(dmg_entry)
 
             # Handling additional damage entries that are lists of dicts, e.g., [{'fire_fw': [1, 4, 10]}, {'acid': [1, 6]}]
             elif isinstance(dmg_source, list):
@@ -97,8 +96,8 @@ class DamageSimulator:
                         sides = dmg_nums[1]
                         flat = dmg_nums[2] if len(dmg_nums) > 2 else None
                         dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
-                        dmg_list = self.dmg_dict.setdefault(dmg_type_key, [])
-                        dmg_list.append(dmg_entry)
+                        self.dmg_dict.setdefault(dmg_type_key, []).append(dmg_entry)
+
                     else:
                         # Handling unexpected formats gracefully
                         print(f"Warning: Unexpected damage source format in list: {item}")
@@ -166,10 +165,17 @@ class DamageSimulator:
                     dmg_death = dmg_dict.pop('death', [])                                           # Remove the 'sneak' dmg from crit multiplication
                     dmg_death_max = max(dmg_death, key=lambda sublist: sublist[0], default=None)    # Find the highest 'Sneak' dmg, can't stack sneak
 
-                    dmg_massive = dmg_dict.pop('massive', [])                                            # Remove the 'Massive' dmg from crit multiplication
-                    dmg_massive_max = max(dmg_massive, key=lambda sublist: sublist[0], default=None)     # Find the highest 'Massive' dmg, can't stack massive
+                    def get_max_dmg(dmg_list):
+                        dice = dmg_list[0]
+                        sides = dmg_list[1]
+                        flat = dmg_list[2] if len(dmg_list) > 2 else 0
+                        return dice * sides + flat
 
-                    dmg_flameweap = dmg_dict.pop('fire_fw', [])         # Remove the 'Flame Weapon' dmg from crit multiplication
+                    dmg_massive = dmg_dict.pop('massive', [])                          # Remove the 'Massive' dmg from crit multiplication
+                    dmg_massive_max = max(dmg_massive, key=get_max_dmg, default=None)  # Find the highest 'Massive' dmg, can't stack massive
+
+                    dmg_flameweap = dmg_dict.pop('fire_fw', [])                            # Remove the 'Flame Weapon' dmg from crit multiplication
+                    dmg_flameweap_max = max(dmg_flameweap, key=get_max_dmg, default=None)  # Find the highest 'Flame on Hit' dmg, can't stack multiple on-hits
 
                     if legend_dmg_common:   # Checking if list is NOT empty, then adding the legend common damage to ordinary damage dictionary
                         dmg_type_name = legend_dmg_common.pop(2)
@@ -188,15 +194,16 @@ class DamageSimulator:
                             dmg_dict['physical'].append(dmg_massive_max)  # Add 'Massive' again after dmg rolls have been multiplied
 
                     if dmg_sneak_max is not None:   # Add 'Sneak Attack' again after crit dmg rolls have been multiplied
-                        dmg_dict['physical'].append(dmg_sneak_max)
-                        dmg_dict_crit_imm['physical'].append(dmg_sneak_max)
+                        dmg_dict.setdefault('physical', []).append(dmg_sneak_max)
+                        dmg_dict_crit_imm.setdefault('physical', []).append(dmg_sneak_max)
 
                     if dmg_death_max is not None:   # Add 'Death Attack' again after crit dmg rolls have been multiplied
-                        dmg_dict['physical'].append(dmg_death_max)
-                        dmg_dict_crit_imm['physical'].append(dmg_death_max)
+                        dmg_dict.setdefault('physical', []).append(dmg_death_max)
+                        dmg_dict_crit_imm.setdefault('physical', []).append(dmg_death_max)
 
-                    if dmg_flameweap is not None:   # Add 'Flame Weapon' again after crit dmg rolls have been multiplied
-                        dmg_dict['fire_fw'] = dmg_flameweap
+                    if dmg_flameweap_max is not None:   # Add 'Flame Weapon' again after crit dmg rolls have been multiplied
+                        dmg_dict.setdefault('fire', []).append(dmg_flameweap_max)
+                        dmg_dict_crit_imm.setdefault('fire', []).append(dmg_flameweap_max)
 
                     dmg_sums = self.get_damage_results(dmg_dict, legend_imm_factors)
                     dmg_sums_crit_imm = dmg_sums if crit_multiplier == 1 else self.get_damage_results(dmg_dict_crit_imm, legend_imm_factors)
@@ -204,11 +211,20 @@ class DamageSimulator:
                 attack_dmg = sum(dmg_sums.values()) + sum(legend_dmg_sums.values())
                 attack_dmg_crit_imm = sum(dmg_sums_crit_imm.values()) + sum(legend_dmg_sums.values())
 
+                # Update cumulative damage by type for plotting/analysis
+                for k, v in dmg_sums.items():
+                    self.cumulative_damage_by_type[k] = self.cumulative_damage_by_type.get(k, 0) + v
+                for k, v in legend_dmg_sums.items():
+                    self.cumulative_damage_by_type[k] = self.cumulative_damage_by_type.get(k, 0) + v
+
                 total_round_dmg += attack_dmg
                 total_round_dmg_crit_imm += attack_dmg_crit_imm
 
             self.total_dmg += total_round_dmg
             self.total_dmg_crit_imm += total_round_dmg_crit_imm
+
+            # Track cumulative total damage per round for plotting
+            self.cumulative_damage_per_round.append(self.total_dmg)
 
             # Current average DPS - crit allowed
             rolling_dpr = self.total_dmg / round_num
@@ -273,6 +289,10 @@ class DamageSimulator:
             "avg_dps_both": round(dps_both, 2),
             "dps_crits": round(dps_mean, 2),
             "dps_no_crits": round(dps_crit_imm_mean, 2),
+            "dps_per_round": self.dps_per_round,
+            "dps_rolling_avg": self.dps_rolling_avg,
+            "cumulative_damage_per_round": self.cumulative_damage_per_round,
+            "damage_by_type": self.cumulative_damage_by_type,
             "attack_prog": self.attack_sim.attack_prog,
             "hit_rate_actual": self.stats.hit_rate,
             "crit_rate_actual": self.stats.crit_hit_rate,

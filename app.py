@@ -16,6 +16,7 @@ from components.additional_damage import build_additional_damage_panel
 from components.simulation_settings import build_simulation_settings
 from components.results_tab import build_results_tab
 from components.reference_tab import build_reference_info_tab
+from components.plots import build_plots_tab
 import components.callbacks as callbacks
 
 
@@ -94,7 +95,10 @@ app.layout = dbc.Container([
             # Tab 2: Results
             build_results_tab(),
 
-            # Tab 3: Reference Information
+            # Tab 3: Plots
+            build_plots_tab(),
+
+            # Tab 4: Reference Information
             build_reference_info_tab(),
 
         ], style={'padding': '20px 0px 0px 0px'}),
@@ -113,6 +117,7 @@ app.layout = dbc.Container([
 callbacks.register_toggle_additional_damage(app)
 callbacks.register_update_reference_info(app)
 callbacks.register_reset_to_defaults(app)   # Register the reset-to-defaults callback
+callbacks.register_plot_callbacks(app)
 
 
 # Callback to disable inputs and show spinner when calculation starts
@@ -255,7 +260,7 @@ def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, com
 )
 def update_results(results_dict):
     if not results_dict:
-        return "Click Calculate to see results", ""
+        return "Run simulation to see results...", ""
 
     detailed_results = []
     for weapon, results in results_dict.items():
