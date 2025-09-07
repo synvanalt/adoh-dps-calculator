@@ -18,8 +18,7 @@ def build_additional_damage_rows(additional_damage_dict):
             persistence_type=persist_type,
         )
 
-        # Extract damage params from dict format
-        # val[1] example: {'fire_fw': [1, 4, 10]}
+        # Extract damage params from dict format, val[1] example: {'fire_fw': [1, 4, 10]}
         dmg_type_key, dmg_nums = next(iter(val[1].items()))
 
         # Prettifying the damage type names for better readability
@@ -30,111 +29,63 @@ def build_additional_damage_rows(additional_damage_dict):
         else:
             dmg_type_name = dmg_type_key.title() if dmg_type_key else ''
 
-        # Different layout for Flame Weapon, dice damage, and flat damage
-        if key == 'Flame_Weapon' or key == 'Darkfire':
-            widgets = html.Div([
-                dbc.Input(
-                    id={'type': 'add-dmg-input1', 'name': key},
-                    type='number',
-                    value=dmg_nums[0],  # num dice
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                    style={'marginRight': '0.2em'},
-                ),
-                html.Span("d", style={'marginRight': '0.2em'}),
-                dbc.Input(
-                    id={'type': 'add-dmg-input2', 'name': key},
-                    type='number',
-                    value=dmg_nums[1],  # sides
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                ),
-                html.Span("+", style={'marginLeft': '0.2em', 'marginRight': '0.2em'}),
-                dbc.Input(
-                    id={'type': 'add-dmg-input3', 'name': key},
-                    type='number',
-                    value=dmg_nums[2] if len(dmg_nums) > 2 else 0,  # flat
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                ),
-                html.Span(f"{dmg_type_name}", style={'marginLeft': '0.5em'}),
-            ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
+        # Assigning visibility for each damage input based on applicability (dice damage, flat damage, or both)
+        if not isinstance(dmg_nums, list) or len(dmg_nums) != 3:
+            raise ValueError(f"Invalid damage numbers for {key}: {dmg_nums}. Expected a list of three integers [dice, sides, flat].")
 
-        elif dmg_nums and dmg_nums[0] != 0:  # dice damage
-            widgets = html.Div([
-                dbc.Input(
-                    id={'type': 'add-dmg-input1', 'name': key},
-                    type='number',
-                    value=dmg_nums[0],  # num dice
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                    style={'marginRight': '0.2em'},
-                ),
-                html.Span("d", style={'marginRight': '0.2em'}),
-                dbc.Input(
-                    id={'type': 'add-dmg-input2', 'name': key},
-                    type='number',
-                    value=dmg_nums[1],  # sides
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                ),
-                html.Span(f"{dmg_type_name}", style={'marginLeft': '0.5em'}),
-                dbc.Input(
-                    id={'type': 'add-dmg-input3', 'name': key},
-                    type='number',
-                    value=dmg_nums[2] if len(dmg_nums) > 2 else 0,  # flat
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                    style={'display': 'none'},
-                ),
-            ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
+        if dmg_nums[0] == 0:    # Flat damage only
+            visibility_dice = {'display': 'none'}
+            visibility_sides = {'display': 'none'}
+            visibility_plus = {'display': 'none'}
+            visibility_flat = {}    # 'width': '25%'
 
-        else:  # flat damage
-            widgets = html.Div([
-                dbc.Input(
-                    id={'type': 'add-dmg-input1', 'name': key},
-                    type='number',
-                    value=dmg_nums[0] if dmg_nums is not None else 0,  # num dice (hidden)
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                    style={'display': 'none'},
-                ),
-                dbc.Input(
-                    id={'type': 'add-dmg-input2', 'name': key},
-                    type='number',
-                    value=dmg_nums[1] if dmg_nums is not None else 0,  # sides / flat amount
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                    style={'width': '25%'},
-                ),
-                html.Span(f"{dmg_type_name.title()}", style={'marginLeft': '0.5em'}),
-                dbc.Input(
-                    id={'type': 'add-dmg-input3', 'name': key},
-                    type='number',
-                    value=dmg_nums[2] if (dmg_nums and len(dmg_nums) > 2) else 0,  # flat
-                    step=1,
-                    persistence=True,
-                    persistence_type=persist_type,
-                    class_name='add-dmg-input',
-                    style={'display': 'none'},
-                ),
-            ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
+        elif dmg_nums[2] == 0:  # Dice damage only
+            visibility_dice = {'marginRight': '0.2em'}
+            visibility_sides = {}
+            visibility_plus = {'display': 'none'}
+            visibility_flat = {'display': 'none'}
+
+        else:                   # Both dice and flat damage
+            visibility_dice = {'marginRight': '0.2em'}
+            visibility_sides = {}
+            visibility_plus = {'marginLeft': '0.2em', 'marginRight': '0.2em'}
+            visibility_flat = {}
+
+        widgets = html.Div([
+            dbc.Input(
+                id={'type': 'add-dmg-input1', 'name': key},
+                type='number',
+                value=dmg_nums[0],  # num dice
+                step=1,
+                persistence=True,
+                persistence_type=persist_type,
+                class_name='add-dmg-input',
+                style=visibility_dice,
+            ),
+            html.Span("d", style=visibility_dice),
+            dbc.Input(
+                id={'type': 'add-dmg-input2', 'name': key},
+                type='number',
+                value=dmg_nums[1],  # sides
+                step=1,
+                persistence=True,
+                persistence_type=persist_type,
+                class_name='add-dmg-input',
+                style=visibility_sides,
+            ),
+            html.Span("+", style=visibility_plus),
+            dbc.Input(
+                id={'type': 'add-dmg-input3', 'name': key},
+                type='number',
+                value=dmg_nums[2],  # flat
+                step=1,
+                persistence=True,
+                persistence_type=persist_type,
+                class_name='add-dmg-input',
+                style=visibility_flat,
+            ),
+            html.Span(f"{dmg_type_name}", style={'marginLeft': '0.5em'}),
+        ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
 
         # Combined row: switch on left and widgets on right
         combined = dbc.Row([
