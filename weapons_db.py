@@ -102,7 +102,7 @@ PURPLE_WEAPONS = {
     'Light Flail': {'physical': [7, 6], 'pure': [2, 8], 'legendary': {'proc': 0.05, 'effect': 'sunder'}},  # sunder
     'Longsword': {'physical': [2, 8], 'cold': [2, 12], 'magical': [2, 6], 'legendary': {'proc': 'on_crit', 'cold': [2, 6], 'pure': [2, 6]}},  # Icy Veng, 2d6 pierce v. undead
     'Morningstar': {'physical': [2, 6], 'positive': [7, 6], 'massive': [1, 6]},  # divine extend, 10% pos immune
-    'Rapier_Stinger': {'physical': [2, 12], 'acid': [2, 10], 'cold': [2, 6], 'massive': [0, 0, 15], 'legendary': {'proc': 0.05, 'acid': [2, 6], 'pure': [2, 6]}},
+    'Rapier_Stinger': {'physical': [2, 12], 'acid': [2, 10], 'massive': [0, 0, 15], 'legendary': {'proc': 0.05, 'acid': [2, 6], 'pure': [2, 6]}},
     'Rapier_Touch': {'physical': [2, 6], 'magical': [2, 6], 'cold': [2, 6], 'massive': [0, 0, 25]},  # + pp skill
     'Scimitar': {'physical': [7, 6], 'massive': [7, 6]},  # 5% phys immune
     'Warhammer_Dementia': {'physical': [2, 8], 'positive': [2, 8], 'magical': [2, 8]},  # On-hit Confuse DC=44/5%/5rounds

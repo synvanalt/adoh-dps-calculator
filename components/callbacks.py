@@ -118,13 +118,12 @@ def register_update_reference_info(app):
                         dice = leg_val[0]
                         sides = leg_val[1]
                         flat = leg_val[2] if len(leg_val) > 2 else None
-                        if dice == 0:
-                            props_dmg.append(f"{sides} {leg_key.title()} (Legendary {proc_str})")
+                        if dice == 0 and flat:
+                            props_dmg.append(f"{flat} {leg_key.title()} (Legendary {proc_str})")
+                        elif dice > 0 and flat:
+                            props_dmg.append(f"Legendary {proc_str}: {dice}d{sides}+{flat} {leg_key.title()}")
                         else:
-                            if flat:
-                                props_dmg.append(f"Legendary {proc_str}: {dice}d{sides}+{flat} {leg_key.title()}")
-                            else:
-                                props_dmg.append(f"Legendary {proc_str}: {dice}d{sides} {leg_key.title()}")
+                            props_dmg.append(f"Legendary {proc_str}: {dice}d{sides} {leg_key.title()}")
 
                 else:
                     # val can be a list [dice, sides]/[dice, sides, flat] or dict (vs_race mapping)
@@ -133,21 +132,23 @@ def register_update_reference_info(app):
                         for actual_type, nums in val.items():
                             dice = nums[0]
                             sides = nums[1]
-                            if dice == 0:
-                                props_dmg.append(f"{sides} {actual_type.title()} (vs. race)")
+                            flat = nums[2] if len(nums) > 2 else None
+                            if dice == 0 and flat:
+                                props_dmg.append(f"{flat} {actual_type.title()} (vs. race)")
+                            elif dice > 0 and flat:
+                                props_dmg.append(f"{dice}d{sides}+{flat} {actual_type.title()} (vs. race)")
                             else:
                                 props_dmg.append(f"{dice}d{sides} {actual_type.title()} (vs. race)")
                     else:
                         dice = val[0]
                         sides = val[1]
                         flat = val[2] if len(val) > 2 else None
-                        if dice == 0:
-                            props_dmg.append(f"{sides} {key.title()}")
+                        if dice == 0 and flat:
+                            props_dmg.append(f"{flat} {key.title()}")
+                        elif dice > 0 and flat:
+                            props_dmg.append(f"{dice}d{sides}+{flat} {key.title()}")
                         else:
-                            if flat:
-                                props_dmg.append(f"{dice}d{sides}+{flat} {key.title()}")
-                            else:
-                                props_dmg.append(f"{dice}d{sides} {key.title()}")
+                            props_dmg.append(f"{dice}d{sides} {key.title()}")
 
             props_dmg = ", ".join(props_dmg)
             purple_weapon_props.append((props_name, str(props_dmg)))
