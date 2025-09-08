@@ -119,7 +119,7 @@ def register_update_reference_info(app):
                         sides = leg_val[1]
                         flat = leg_val[2] if len(leg_val) > 2 else None
                         if dice == 0 and flat:
-                            props_dmg.append(f"{flat} {leg_key.title()} (Legendary {proc_str})")
+                            props_dmg.append(f"Legendary {proc_str}: {flat} {leg_key.title()}")
                         elif dice > 0 and flat:
                             props_dmg.append(f"Legendary {proc_str}: {dice}d{sides}+{flat} {leg_key.title()}")
                         else:

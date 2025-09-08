@@ -107,7 +107,4 @@ class LegendEffect:
             self.stats.legend_procs += 1
             add_legend_dmg()
 
-        else:
-            raise ValueError(f"Invalid legend 'proc' entry: {proc}. Expected float (chance_on_hit) or str (critical_hit).")
-
         return legend_dict_sums, legend_dmg_common, legend_imm_factors

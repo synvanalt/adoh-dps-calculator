@@ -14,14 +14,16 @@ class Weapon:
 
         # Load weapon properties from the database
         # Example: 'Halberd': {'dmg': [1, 10, 'slashing & piercing'], 'threat': 20, 'multiplier': 3, 'size': 'L'},
-        properties = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON] if self.cfg.SHAPE_WEAPON_OVERRIDE else WEAPON_PROPERTIES[self.name_base]
+        base_props = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON] if self.cfg.SHAPE_WEAPON_OVERRIDE else WEAPON_PROPERTIES[self.name_base]
 
-        dice = properties['dmg'][0]
-        sides = properties['dmg'][1]
+        self.purple_props = PURPLE_WEAPONS[self.name_purple]
+
+        dice = base_props['dmg'][0]
+        sides = base_props['dmg'][1]
         self.dmg = {'physical': [dice, sides, 0]}   # To fit the convention of [dice, sides, flat]
-        self.threat_base = properties['threat']
-        self.multiplier_base = properties['multiplier']
-        self.size = properties['size']
+        self.threat_base = base_props['threat']
+        self.multiplier_base = base_props['multiplier']
+        self.size = base_props['size']
 
         self.crit_threat = self.get_crit_threat()
         self.crit_multiplier = self.crit_multiplier()
@@ -95,27 +97,9 @@ class Weapon:
         """
         dmg_src_dict = {
             'base_dmg': self.dmg,
-            'purple_dmg': PURPLE_WEAPONS[self.name_purple],
+            'purple_dmg': self.purple_props,
             'enhancement_dmg': self.enhancement_bonus(),
             'str_dmg': self.strength_bonus(),
             'additional_dmg': [v[1] for v in self.cfg.ADDITIONAL_DAMAGE.values() if v[0] is True],
         }
         return dmg_src_dict
-
-    def get_legend_proc_rate_theoretical(self, crit_rate):
-        """
-        :return: The theoretical chance to trigger a legend proc, based on the weapon's legend property
-        """
-        legend_proc_rate = 0.0
-        purple_props = PURPLE_WEAPONS.get(self.name_purple, {})
-        legendary = purple_props.get('legendary') if isinstance(purple_props, dict) else None
-        if legendary:
-            proc = legendary.get('proc')
-            if isinstance(proc, (float, int)):
-                legend_proc_rate = float(proc)
-            elif isinstance(proc, str) and proc == 'on_crit':
-                legend_proc_rate = crit_rate / 100
-            else:
-                legend_proc_rate = 0.0
-
-        return legend_proc_rate

@@ -75,6 +75,24 @@ class AttackSimulator:
     def get_noncrit_chance(self):
         return sum(self.noncrit_chance_list) / len(self.noncrit_chance_list)
 
+    def get_legend_proc_rate_theoretical(self):
+        """
+        :return: The theoretical chance to trigger a legend proc, based on the weapon's legend property
+        """
+        legend_proc_rate = 0.0
+        purple_props = self.weapon.purple_props
+        legendary = purple_props.get('legendary') if isinstance(purple_props, dict) else None
+        if legendary:
+            proc = legendary.get('proc')
+            if isinstance(proc, (float, int)):  # Proc is float (percentage)
+                legend_proc_rate = float(proc)
+            elif isinstance(proc, str):         # Proc is 'on_crit'
+                legend_proc_rate = self.get_crit_chance()
+            else:
+                legend_proc_rate = 0.0
+
+        return legend_proc_rate
+
     def apply_dual_wield_penalty(self, attack_prog: list, toon_size: str):
         """
         Determine the Dual-Wield penalty and apply it to list of attacks AB offsets

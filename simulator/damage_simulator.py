@@ -283,7 +283,7 @@ class DamageSimulator:
         print(summary)
 
         self.stats.calc_rates_percentages()
-        legend_proc_theoretical = self.weapon.get_legend_proc_rate_theoretical(crit_rate=self.stats.crit_hit_rate)
+        legend_proc_theoretical = self.attack_sim.get_legend_proc_rate_theoretical()
 
         return {
             "avg_dps_both": round(dps_both, 2),
