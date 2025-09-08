@@ -63,7 +63,7 @@ def build_character_settings(cfg):
             dbc.Col(dbc.Select(
                 id='ab-prog-dropdown',
                 options=[{"label": key, "value": key} for key in cfg.AB_PROGRESSIONS.keys()],
-                value="Classic 5APR",  # default value
+                value=cfg.AB_PROG,  # default value
                 persistence=True,
                 persistence_type=persist_type,
             ), xs=6, md=6),

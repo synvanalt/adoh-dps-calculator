@@ -18,9 +18,6 @@ class AttackSimulator:
         if 'Dual-Wield' in attack_prog_name:                                     # Get Dual-Wield penalty and apply to attack_prog
             attack_prog_temp = self.apply_dual_wield_penalty(attack_prog_temp, self.cfg.TOON_SIZE)
 
-        if 'Flurry' in attack_prog_name:
-            self.ab = self.ab - 2
-
         self.attack_prog = [(self.ab + ab_offset) for ab_offset in attack_prog_temp]
         self.attacks_per_round = len(self.attack_prog)
 

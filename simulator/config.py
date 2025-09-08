@@ -33,19 +33,27 @@ class Config:
     # USER INPUTS - CHARACTER
     AB: int = 68
     AB_CAPPED: int = 70
-    AB_PROG: str = "Classic 5APR"
+    AB_PROG: str = "5APR Classic"
     AB_PROGRESSIONS: Dict[str, Any] = field(default_factory=lambda: {
-        "Classic 5APR":                     [0, -5, -10, -15, 0],
-        "Shifter 5APR":                     [0, -5, -10, 0, -5],
-        "Dual-Wield APR":                   [0, -5, -10, -15, "-dw_penalty", 0, -5],
-        "Dual-Wield & Blinding Speed":      [0, -5, -10, -15, "-dw_penalty", 0, -5, -10],
-        "Ranged & Rapid Shot":              [0, -5, -10, -15, 0, -5],
-        "Ranged & R.Shot & B.Speed":        [0, -5, -10, -15, 0, -5, -10],
+        "4APR Classic":                     [0, -5, -10, 0],
+        "4APR & Blinding Speed":            [0, -5, -10, 0, -5],
+        "4APR & Rapid Shot":                [0, -5, -10, 0, -5],
+        "4APR & R.Shot & B.Speed":          [0, -5, -10, 0, -5, -10],
+        "4APR Dual-Wield":                  [0, -5, -10, "-dw_penalty", 0, -5],
+        "4APR Dual-Wield & B.Speed":        [0, -5, -10, "-dw_penalty", 0, -5, -10],
+        "5APR Classic":                     [0, -5, -10, -15, 0],
+        "5APR Shifter":                     [0, -5, -10, 0, -5],
+        "5APR & Blinding Speed":            [0, -5, -10, -15, 0, -5],
+        "5APR & Rapid Shot":                [0, -5, -10, -15, 0, -5],
+        "5APR & R.Shot & B.Speed":          [0, -5, -10, -15, 0, -5, -10],
+        "5APR Dual-Wield":                  [0, -5, -10, -15, "-dw_penalty", 0, -5],
+        "5APR Dual-Wield & B.Speed":        [0, -5, -10, -15, "-dw_penalty", 0, -5, -10],
         "Monk APR":                         [0, -3, -6, -9, -12, -15, 0],
-        "Monk & Flurry":                    [0, -3, -6, -9, -12, -15, 0, -5],
-        "Monk & Flurry & B.Speed":          [0, -3, -6, -9, -12, -15, 0, -5, -10],
+        "Monk APR & Flurry":                [0, -3, -6, -9, -12, -15, 0, -5],
+        "Monk APR & Flurry & B.Speed":      [0, -3, -6, -9, -12, -15, 0, -5, -10],
         "Monk Kama & Dual-Wield":           [0, -3, -6, -9, -12, -15, "-dw_penalty", 0, -5],
         "Monk Kama & Dual-Wield & Flurry":  [0, -3, -6, -9, -12, -15, "-dw_penalty", 0, -5, -10],
+        "Monk Kama & Dual-Wield & Flurry & B.Speed":  [0, -3, -6, -9, -12, -15, "-dw_penalty", 0, -5, -10, -15],
     })
 
     TOON_SIZE: str = "M"        # "S" / "M" / "L"
