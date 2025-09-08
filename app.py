@@ -1,5 +1,7 @@
 # Standard library imports
+import traceback
 from dataclasses import asdict
+from functools import wraps
 
 # Third-party imports
 import dash
@@ -62,11 +64,24 @@ app.layout = dbc.Container([
     # Navbar
     html.Div(build_navbar()),
 
-    # Dark overlay with spinner
+    # Dark overlay with spinner during calculation
     html.Div(
         id='loading-overlay',
         children=dbc.Spinner(color='light', size='lg', type='border'),
         style={'display': 'none'}
+    ),
+
+    # Error modal to catch exceptions in risky calculation part
+    dbc.Modal(
+        [
+            dbc.ModalHeader(dbc.ModalTitle("Oops, unexpected error..."), close_button=False),
+            dbc.ModalBody(id='global-error-body'),
+            dbc.ModalFooter(dbc.Button("Close", id='close-global-error', class_name='ms-auto')),
+        ],
+        id='global-error-modal',
+        is_open=False,
+        backdrop='static',
+        style={"zIndex": 99999},
     ),
 
     dbc.Container([
@@ -147,42 +162,94 @@ def toggle_overlay(n_clicks_calc, n_clicks_recalc):
         return {"display": "none"}
 
 
-# Callback to run calculation
+# Callback to close error modal
 @app.callback(
-    Output('is-calculating', 'data'),
-    Output('intermediate-value', 'data'),
-    Output('config-store', 'data'),
-    Input('loading-overlay', 'style'),
-    State('config-store', 'data'),
-    State('ab-input', 'value'),
-    State('ab-capped-input', 'value'),
-    State('ab-prog-dropdown', 'value'),
-    State('toon-size-dropdown', 'value'),
-    State('combat-type-dropdown', 'value'),
-    State('mighty-input', 'value'),
-    State('enhancement-bonus-input', 'value'),
-    State('str-mod-input', 'value'),
-    State({'type': 'melee-switch', 'name': 'two-handed'}, 'value'),
-    State({'type': 'melee-switch', 'name': 'weaponmaster'}, 'value'),
-    State('keen-switch', 'value'),
-    State('improved-crit-switch', 'value'),
-    State('shape-weapon-switch', 'value'),
-    State('shape-weapon-dropdown', 'value'),
-    State({'type': 'add-dmg-switch', 'name': ALL}, 'value'),
-    State({'type': 'add-dmg-input1', 'name': ALL}, 'value'),
-    State({'type': 'add-dmg-input2', 'name': ALL}, 'value'),
-    State({'type': 'add-dmg-input3', 'name': ALL}, 'value'),
-    State('weapon-dropdown', 'value'),
-    State('target-ac-input', 'value'),
-    State('rounds-input', 'value'),
-    State('damage-limit-switch', 'value'),
-    State('damage-limit-input', 'value'),
-    State('dmg-vs-race-switch', 'value'),
-    State('relative-change-input', 'value'),
-    State('relative-std-input', 'value'),
-    State('target-immunities-switch', 'value'),
-    State({'type': 'immunity-input', 'name': ALL}, 'value'),
+    Output("global-error-modal", "is_open", allow_duplicate=True),
+    Output('loading-overlay', 'style', allow_duplicate=True),
+    Input("close-global-error", "n_clicks"),
+    State("global-error-modal", "is_open"),
     prevent_initial_call=True
+)
+def close_error_modal(n_clicks, is_open):
+    if n_clicks:
+        return not is_open, {"display": "none"}
+    else:
+        return dash.no_update, dash.no_update
+
+
+# callback decorator to catch exceptions
+def with_error_modal(app_name, outputs, inputs, states=None):
+    """
+    Wraps a callback so that any exception is caught and shown in a global modal.
+    outputs: list of Outputs from your normal callback +
+             2 extra outputs at the end:
+             Output('global-error-body','children') and Output('global-error-modal','is_open')
+    """
+    states = states or []
+    def decorator(func):
+        @app_name.callback(outputs, inputs, states, prevent_initial_call=True)
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception:
+                # Fill all normal outputs with dash.no_update
+                n_normal_outputs = len(outputs) - 2
+                error_trace = traceback.format_exc()
+                error_trace = html.Pre(error_trace, style={
+                    "whiteSpace": "pre-wrap",
+                    "fontFamily": "monospace",
+                    "overflowX": "auto",
+                    "maxHeight": "300px"
+                })
+                return *[dash.no_update]*n_normal_outputs, error_trace, True
+        return wrapper
+    return decorator
+
+
+@with_error_modal(
+    app,
+    outputs=[
+        Output('is-calculating', 'data'),
+        Output('intermediate-value', 'data'),
+        Output('config-store', 'data'),
+        Output("global-error-body", "children"),         # extra: error text
+        Output("global-error-modal", "is_open")          # extra: open modal
+    ],
+    inputs=[
+        Input('loading-overlay', 'style'),
+    ],
+    states=[
+        State('config-store', 'data'),
+        State('ab-input', 'value'),
+        State('ab-capped-input', 'value'),
+        State('ab-prog-dropdown', 'value'),
+        State('toon-size-dropdown', 'value'),
+        State('combat-type-dropdown', 'value'),
+        State('mighty-input', 'value'),
+        State('enhancement-bonus-input', 'value'),
+        State('str-mod-input', 'value'),
+        State({'type': 'melee-switch', 'name': 'two-handed'}, 'value'),
+        State({'type': 'melee-switch', 'name': 'weaponmaster'}, 'value'),
+        State('keen-switch', 'value'),
+        State('improved-crit-switch', 'value'),
+        State('shape-weapon-switch', 'value'),
+        State('shape-weapon-dropdown', 'value'),
+        State({'type': 'add-dmg-switch', 'name': ALL}, 'value'),
+        State({'type': 'add-dmg-input1', 'name': ALL}, 'value'),
+        State({'type': 'add-dmg-input2', 'name': ALL}, 'value'),
+        State({'type': 'add-dmg-input3', 'name': ALL}, 'value'),
+        State('weapon-dropdown', 'value'),
+        State('target-ac-input', 'value'),
+        State('rounds-input', 'value'),
+        State('damage-limit-switch', 'value'),
+        State('damage-limit-input', 'value'),
+        State('dmg-vs-race-switch', 'value'),
+        State('relative-change-input', 'value'),
+        State('relative-std-input', 'value'),
+        State('target-immunities-switch', 'value'),
+        State({'type': 'immunity-input', 'name': ALL}, 'value')
+    ],
 )
 def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_bonus,
                     str_mod, two_handed, weaponmaster, keen, improved_crit, shape_weapon_override, shape_weapon,
@@ -192,7 +259,7 @@ def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, com
 
     # if not ctx.triggered_id or not weapons:
     if spinner['display'] == 'none' or not weapons:
-        return False, dash.no_update, current_cfg
+        return False, dash.no_update, current_cfg, dash.no_update, False
 
     # if ctx.triggered_id == 'calculate-button' or ctx.triggered_id == 'recalculate-button':
     if spinner['display'] == 'flex':
@@ -247,9 +314,9 @@ def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, com
             calculator = DamageSimulator(weapon, user_cfg)
             results_dict[weapon] = calculator.simulate_dps()
 
-        return False, results_dict, current_cfg
+        return False, results_dict, current_cfg, dash.no_update, False
 
-    return False, dash.no_update, current_cfg
+    return False, dash.no_update, current_cfg, dash.no_update, False
 
 
 # Callback to update results based on stored calculation results
