@@ -81,6 +81,8 @@ class Config:
         "Divine_Favor":     [False, {'magical':     [0, 0, 5]}],
         "Divine_Might":     [False, {'divine':      [0, 0, 11]}],
         "Divine_Wrath":     [False, {'pure':        [0, 0, 13]}],
+        "Defeaning_Clang":  [False, {'sonic':       [0, 0, 3]}],
+        "Bless_Weapon":     [False, {'divine':      [2, 6, 0]}],
         "Bane_of_Enemies":  [False, {'physical':    [2, 6, 0]}],
         "Sneak_Attack":     [False, {'sneak':       [5, 6, 0]}],
         "Death_Attack":     [False, {'death':       [3, 6, 0]}],
