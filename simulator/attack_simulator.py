@@ -66,10 +66,10 @@ class AttackSimulator:
 
         return hit_chance_list, crit_chance_list, noncrit_chance_list
 
-    def get_hit_chance(self):
+    def get_hit_chance(self):   # Hit % out of total attempts
         return sum(self.hit_chance_list) / len(self.hit_chance_list)
 
-    def get_crit_chance(self):
+    def get_crit_chance(self):  # Crit % out of total attempts
         return sum(self.crit_chance_list) / len(self.crit_chance_list)
 
     def get_noncrit_chance(self):
@@ -87,7 +87,7 @@ class AttackSimulator:
             if isinstance(proc, (float, int)):  # Proc is float (percentage)
                 legend_proc_rate = float(proc)
             elif isinstance(proc, str):         # Proc is 'on_crit'
-                legend_proc_rate = self.get_crit_chance()
+                legend_proc_rate = self.get_crit_chance() / self.get_hit_chance()   # Crit % out of total HITS
             else:
                 legend_proc_rate = 0.0
 

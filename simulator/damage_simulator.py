@@ -270,15 +270,11 @@ class DamageSimulator:
         dph_crit_imm = self.total_dmg_crit_imm / self.stats.hits
         summary = (
             f"AB: {self.attack_sim.attack_prog} | Weapon: {self.weapon.name_purple} | Crit: {self.weapon.crit_threat}-20/x{self.weapon.crit_multiplier} | "
-            f"Target AC: {self.cfg.TARGET_AC} | Target Immunities: {self.cfg.TARGET_IMMUNITIES_FLAG} | Rounds averaged: {round_num}\n"
+            f"Target AC: {self.cfg.TARGET_AC} | Rounds averaged: {round_num}\n"
             f"DPS (Crit allowed | immune): {dps_mean:.2f} ± {dps_error:.2f} | {dps_crit_imm_mean:.2f} ± {dps_crit_imm_error:.2f}\n"
-            # f"DPS (Crit immune): {dps_crit_imm_mean:.2f} ± {dps_crit_imm_error:.2f}\n"
             f"TOTAL damage inflicted (Crit allowed | immune): {self.total_dmg} | {self.total_dmg_crit_imm}\n"
-            # f"TOTAL damage inflicted (Crit immune): {self.total_dmg_crit_imm}\n"
             f"AVERAGE damage inflicted per HIT (Crit allowed | immune): {dph:.2f} | {dph_crit_imm:.2f}\n"
-            # f"AVERAGE damage inflicted per HIT (Crit immune): {dph_crit_imm:.2f}\n"
             f"AVERAGE damage inflicted per ROUND (Crit allowed | immune): {dpr:.2f} | {dpr_crit_imm:.2f}\n"
-            # f"AVERAGE damage inflicted per ROUND (Crit immune): {dpr_crit_imm:.2f}\n"
         )
         print(summary)
 
