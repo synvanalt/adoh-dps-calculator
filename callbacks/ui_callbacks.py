@@ -1,55 +1,16 @@
+# Third-party imports
 import dash
-from dash import Input, Output, ALL, MATCH, State
+from dash import Input, Output, ALL, MATCH, State, ctx
+
+# Local imports
 from simulator.config import Config
 from weapons_db import WEAPON_PROPERTIES, PURPLE_WEAPONS
-import plotly.graph_objects as go
-import plotly.express as px
 
 
-# Fixed color palette for damage types (keys are normalized to lowercase base token)
-DAMAGE_TYPE_PALETTE = {
-    'physical':  '#D97706',  # rich orange
-    'fire':      '#DC2626',  # deep red
-    'cold':      '#0EA5E9',  # icy blue
-    'acid':      '#10B981',  # emerald green
-    'electrical':'#2563EB',  # electric blue
-    'sonic':     '#F59E0B',  # amber
-    'negative':  '#6B7280',  # dark gray
-    'positive':  '#D1D5DB',  # light gray
-    'pure':      '#E879F9',  # magenta
-    'magical':   '#8B5CF6',  # violet
-    'divine':    '#FACC15',  # golden yellow
-    'sneak': '#D97706',
-    'massive': '#D97706',
-    'death': '#D97706',
-}
 
-FALLBACK_COLORS = px.colors.qualitative.Plotly
+def register_ui_callbacks(app, cfg):
 
-# Dark theme helper to match Bootstrap dark mode
-def apply_dark_theme(fig):
-    fig.update_layout(
-        template='plotly_dark',
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='#f8f9fa'),
-        legend=dict(bgcolor='rgba(0,0,0,0)'),
-        margin=dict(l=40, r=20, t=40, b=40),
-    )
-    axis_style = dict(
-        gridcolor='rgba(255,255,255,0.06)',
-        zerolinecolor='rgba(255,255,255,0.06)',
-        tickfont=dict(color='#f8f9fa'),
-        title=dict(font=dict(color='#f8f9fa'))
-    )
-    fig.update_xaxes(**axis_style)
-    fig.update_yaxes(**axis_style)
-    return fig
-
-cfg = Config()
-
-# Callback: toggle additional damage inputs visibility
-def register_toggle_additional_damage(app):
+    # Callback: toggle additional damage inputs visibility
     @app.callback(
         Output({'type': 'add-dmg-row', 'name': MATCH}, 'style'),
         Input({'type': 'add-dmg-switch', 'name': MATCH}, 'value'),
@@ -58,8 +19,8 @@ def register_toggle_additional_damage(app):
         style = {'display': 'flex'} if show else {'display': 'none'}
         return style
 
-# Callback to update reference information
-def register_update_reference_info(app):
+
+    # Callback: update reference information
     @app.callback(
         [Output('weapon-properties', 'children'),
          Output('purple-weapons', 'children'),
@@ -69,10 +30,9 @@ def register_update_reference_info(app):
          Input('weapon-dropdown', 'value'),
          Input('shape-weapon-switch', 'value'),
          Input('shape-weapon-dropdown', 'value'),
-         Input('target-immunities-switch', 'value'),
          Input({'type': 'immunity-input', 'name': ALL}, 'value')],
     )
-    def update_reference_info(_, __, selected_weapons, shape_weapon_override, shape_weapon, boss_immunities, immunity_values):
+    def update_reference_info(_, __, selected_weapons, shape_weapon_override, shape_weapon, immunity_values):
         if not selected_weapons:
             return "No weapon selected", str(cfg.TARGET_IMMUNITIES), "No weapon selected"
 
@@ -102,28 +62,28 @@ def register_update_reference_info(app):
             props_name = f"{weapon}:"
             props_dmg = []
 
-            # properties is now a dict mapping dmg-type -> params
+            # properties now a dict mapping dmg-type -> params
             for key, val in properties.items():
                 if key == 'legendary' and isinstance(val, dict):
                     proc = val.get('proc')
-                    proc_str = f"{int(proc * 100)}%" if isinstance(proc, (int, float)) else ("On-Crit" if proc == 'on_crit' else str(proc))
+                    proc_str = f"On-Hit {int(proc * 100)}%" if isinstance(proc, (int, float)) else ("On-Crit" if proc == 'on_crit' else str(proc))
                     # handle effect key separately
                     for leg_key, leg_val in val.items():
                         if leg_key == 'proc':
                             continue
                         if leg_key == 'effect':
-                            props_dmg.append(f"Legendary {proc_str}: {leg_val.replace('_', ' ').title()}")
+                            props_dmg.append(f"{proc_str}: {leg_val.replace('_', ' ').title()}")
                             continue
                         # leg_val expected to be [dice, sides] or [dice, sides, flat]
                         dice = leg_val[0]
                         sides = leg_val[1]
                         flat = leg_val[2] if len(leg_val) > 2 else None
                         if dice == 0 and flat:
-                            props_dmg.append(f"Legendary {proc_str}: {flat} {leg_key.title()}")
+                            props_dmg.append(f"{proc_str}: {flat} {leg_key.title()}")
                         elif dice > 0 and flat:
-                            props_dmg.append(f"Legendary {proc_str}: {dice}d{sides}+{flat} {leg_key.title()}")
+                            props_dmg.append(f"{proc_str}: {dice}d{sides}+{flat} {leg_key.title()}")
                         else:
-                            props_dmg.append(f"Legendary {proc_str}: {dice}d{sides} {leg_key.title()}")
+                            props_dmg.append(f"{proc_str}: {dice}d{sides} {leg_key.title()}")
 
                 else:
                     # val can be a list [dice, sides]/[dice, sides, flat] or dict (vs_race mapping)
@@ -150,15 +110,26 @@ def register_update_reference_info(app):
                         else:
                             props_dmg.append(f"{dice}d{sides} {key.title()}")
 
-            props_dmg = ", ".join(props_dmg)
-            purple_weapon_props.append((props_name, str(props_dmg)))
+            # props_dmg = ", ".join(props_dmg)
+            # purple_weapon_props.append((props_name, str(props_dmg)))
+            purple_weapon_props.append((props_name, *props_dmg))
 
         def prettify_text(text):
-            """Helper function to align text in columns for better readability"""
-            col_widths = [max(len(row[i]) for row in text) for i in range(len(text[0]))]    # find max column widths
+            """Helper function to align text in columns for better readability
+               Works even if rows have different lengths."""
+            # Find max number of columns across all rows
+            max_cols = max(len(row) for row in text)
+            # Compute column widths considering only rows that have that column
+            col_widths = []
+            for i in range(max_cols):
+                max_width = max(len(row[i]) for row in text if i < len(row))
+                col_widths.append(max_width)
+            # Format each row, padding only existing columns
             formatted_lines = []
             for row in text:
-                line = "  ".join(row[i].ljust(col_widths[i]) for i in range(len(row)))
+                line = "  ".join(
+                    row[i].ljust(col_widths[i]) for i in range(len(row))
+                )
                 formatted_lines.append(line)
             return "\n".join(formatted_lines)
 
@@ -177,10 +148,10 @@ def register_update_reference_info(app):
             imms_data,
         )
 
-# Callback to reset all settings to defaults
-def register_reset_to_defaults(app):
+
+    # Callback: reset all settings to defaults
     @app.callback(
-        Output('config-store', 'data', allow_duplicate=True),
+        [Output('config-store', 'data', allow_duplicate=True),
         Output('ab-input', 'value', allow_duplicate=True),
         Output('ab-capped-input', 'value', allow_duplicate=True),
         Output('ab-prog-dropdown', 'value', allow_duplicate=True),
@@ -210,7 +181,7 @@ def register_reset_to_defaults(app):
         Output('target-immunities-switch', 'value', allow_duplicate=True),
         Output({'type': 'immunity-input', 'name': ALL}, 'value', allow_duplicate=True),
         Output('immunities-store', 'data', allow_duplicate=True),
-        Output('reset-toast', 'is_open', allow_duplicate=True),
+        Output('reset-toast', 'is_open', allow_duplicate=True)],
         Input('reset-button', 'n_clicks'),
         State('immunities-store', 'data'),
         prevent_initial_call=True
@@ -260,113 +231,168 @@ def register_reset_to_defaults(app):
         return dash.no_update
 
 
-def register_plot_callbacks(app):
-    # Populate weapon dropdown with available weapons from the simulation results
+    # Callback: disable inputs and show spinner when calculation starts
     @app.callback(
-        Output('plots-weapon-dropdown', 'options'),
-        Output('plots-weapon-dropdown', 'value'),
-        Input('intermediate-value', 'data'),
+        Output('loading-overlay', 'style', allow_duplicate=True),
+        [Input('calculate-button', 'n_clicks'),
+         Input('recalculate-button', 'n_clicks')],
+        prevent_initial_call=True
     )
-    def populate_weapon_dropdown(results_dict):
-        if not results_dict:
-            return [], None
-        weapons = list(results_dict.keys())
-        options = [{'label': w, 'value': w} for w in weapons]
-        # default to first weapon
-        return options, weapons[0]
+    def toggle_overlay(n_clicks_calc, n_clicks_recalc):
+        if n_clicks_calc or n_clicks_recalc:
+            # Show overlay
+            return {
+                "position": "fixed",
+                "top": 0,
+                "left": 0,
+                "width": "100%",
+                "height": "100%",
+                "backgroundColor": "rgba(0, 0, 0, 0.5)",
+                "display": "flex",  # flex to center spinner
+                "justifyContent": "center",
+                "alignItems": "center",
+                "zIndex": 9999,
+            }
+        else:
+            # Hide overlay
+            return {"display": "none"}
 
-    # DPS Comparison bar chart
+
+    # Callback: close error modal
     @app.callback(
-        Output('plots-dps-comparison', 'figure'),
-        Input('intermediate-value', 'data')
+        Output("global-error-modal", "is_open", allow_duplicate=True),
+        Output('loading-overlay', 'style', allow_duplicate=True),
+        Input("close-global-error", "n_clicks"),
+        State("global-error-modal", "is_open"),
+        prevent_initial_call=True
     )
-    def update_dps_comparison_figure(results_dict):
-        fig = go.Figure()
-        if not results_dict:
-            fig.update_layout(title='No simulation data')
-            apply_dark_theme(fig)
-            return fig
+    def close_error_modal(n_clicks, is_open):
+        if n_clicks:
+            return not is_open, {"display": "none"}
+        else:
+            return dash.no_update, dash.no_update
 
-        weapons = []
-        dps_crits = []
-        dps_no_crits = []
-        dps_avg = []
 
-        for weapon, results in results_dict.items():
-            weapons.append(weapon)
-            dps_crits.append(results['dps_crits'])
-            dps_no_crits.append(results['dps_no_crits'])
-            dps_avg.append(results['avg_dps_both'])
+    # Callback: show Results as active tab when calculation done
+    @app.callback(
+        Output('tabs', 'active_tab'),
+        [Input('intermediate-value', 'data')]
+    )
+    def switch_to_results(results):
+        if results:
+            return 'results'
+        return dash.no_update
 
-        # Create grouped bar chart
-        fig.add_trace(go.Bar(name='Crits Allowed', x=weapons, y=dps_crits))
-        fig.add_trace(go.Bar(name='Crits Immune', x=weapons, y=dps_no_crits))
-        fig.add_trace(go.Bar(name='Average DPS', x=weapons, y=dps_avg))
 
-        # Update layout for better readability
-        fig.update_layout(
-            barmode='group',
-            xaxis_title='Weapons',
-            yaxis_title='DPS',
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
+    # Callback: re-enable inputs after calculation
+    @app.callback(
+        Output('loading-overlay', 'style', allow_duplicate=True),
+        [Input('intermediate-value', 'data')],
+        prevent_initial_call=True
+    )
+    def toggle_overlay(results):
+        if results:
+            # Hide overlay
+            return {"display": "none"}
+        else:
+            # Show overlay
+            return {
+                "position": "fixed",
+                "top": 0,
+                "left": 0,
+                "width": "100%",
+                "height": "100%",
+                "backgroundColor": "rgba(0, 0, 0, 0.5)",
+                "display": "flex",  # flex to center spinner
+                "justifyContent": "center",
+                "alignItems": "center",
+                "zIndex": 9999,
+            }
+
+
+    # Callback: toggle target immunities inputs
+    @app.callback(
+        Output({'type': 'immunity-input', 'name': ALL}, 'value'),
+        Output('immunities-store', 'data'),
+        Input('target-immunities-switch', 'value'),
+        State('config-store', 'data'),
+        State('immunities-store', 'data'),
+        State({'type': 'immunity-input', 'name': ALL}, 'value'),
+        prevent_initial_call=True
+    )
+    def toggle_immunities(apply_immunities, cfg_store, immunities_store, current_input_values):
+        names = list(cfg.TARGET_IMMUNITIES.keys())
+        n = len(names)
+
+        # Ensure store dict exists
+        immunities_store = immunities_store or {}
+
+        if apply_immunities:
+            # Prefer the most recent user values saved in immunities-store
+            if any(name in immunities_store for name in names):
+                return [round(immunities_store.get(name, 0) * 100) for name in names], immunities_store
+
+            # Fallback to config-store values (fractions -> percentages)
+            if cfg_store and "TARGET_IMMUNITIES" in cfg_store:
+                return [round(cfg_store["TARGET_IMMUNITIES"].get(name, 0) * 100) for name in names], immunities_store
+
+            # Final fallback: zeros
+            return [0] * n, immunities_store
+
+        else:
+            # Switch off → save current values to immunities-store before setting to 0
+            updated_store = {
+                name: (val or 0) / 100  # Convert percentages back to fractions
+                for name, val in zip(names, current_input_values)
+            }
+            return [0] * n, updated_store
+
+
+    # Callback: toggle melee/ranged dependent params OFF and disabled
+    @app.callback(
+        # Output({'type': 'melee-row', 'name': ALL}, 'style'),
+        Output({'type': 'melee-switch', 'name': ALL}, 'value'),
+        Output('mighty-input', 'value'),
+        Output({'type': 'melee-switch', 'name': ALL}, 'disabled', allow_duplicate=True),
+        Output('mighty-input', 'disabled', allow_duplicate=True),
+        Input('combat-type-dropdown', 'value'),
+        prevent_initial_call='initial_duplicate'
+    )
+    def toggle_melee_params(combat_type):
+        n = len(ctx.outputs_list[0])  # number of matching melee rows
+        if combat_type == 'ranged':
+            return (
+                [False] * n,  # Turn OFF all melee switches
+                20,  # Set mighty to 20
+                [True] * n,  # Disable all melee switches
+                False  # Enable mighty input
             )
-        )
-        apply_dark_theme(fig)
-        return fig
+        elif combat_type == 'melee':
+            return (
+                [dash.no_update] * n,  # Don't update the melee switches
+                0,  # Set mighty to 0
+                [False] * n,  # Enable all melee switches
+                True  # Disable mighty input
+            )
+        else:
+            return dash.no_update
 
-    # Per-weapon plots: DPS vs damage and damage breakdown pie
+
+    # Callback: toggle shape weapon visibility
     @app.callback(
-        Output('plots-weapon-dps-vs-damage', 'figure'),
-        Output('plots-weapon-breakdown', 'figure'),
-        Input('plots-weapon-dropdown', 'value'),
-        State('intermediate-value', 'data')
+        Output('shape-weapon-dropdown', 'style'),
+        Input('shape-weapon-switch', 'value'),
     )
-    def update_weapon_plots(selected_weapon, results_dict):
-        empty_fig = go.Figure()
-        empty_fig.update_layout(title='No simulation data')
-        apply_dark_theme(empty_fig)
+    def toggle_shape_weapon(show):
+        style = {'display': 'flex'} if show else {'display': 'none'}
+        return style
 
-        if not results_dict or not selected_weapon or selected_weapon not in results_dict:
-            return empty_fig, empty_fig
 
-        results = results_dict[selected_weapon]
-
-        # DPS vs Cumulative Damage: use cumulative damage (x) vs rolling avg DPS (x)
-        dps_vals = results.get('dps_rolling_avg') or results.get('dps_per_round') or []
-        cum_damage = results.get('cumulative_damage_per_round') or []
-        fig1 = go.Figure()
-        if dps_vals and cum_damage:
-            n = min(len(dps_vals), len(cum_damage))
-            # X = cumulative damage, Y = DPS
-            fig1.add_trace(go.Scatter(x=cum_damage[:n], y=dps_vals[:n], mode='lines+markers', marker=dict(opacity=0.9)))
-            fig1.update_layout(title=f'', xaxis_title='Cumulative Damage', yaxis_title='Mean DPS')
-        else:
-            fig1.update_layout(title='Insufficient data for DPS vs Damage')
-        apply_dark_theme(fig1)
-
-        # Damage breakdown pie
-        dmg_by_type = results.get('damage_by_type') or {}
-        if dmg_by_type:
-            labels = [k.split('_')[0].title() for k in dmg_by_type.keys()]
-            values = [v for v in dmg_by_type.values()]
-            colors = []
-            for lab in labels:
-                key = lab.lower()
-                col = DAMAGE_TYPE_PALETTE.get(key)
-                if not col:
-                    col = FALLBACK_COLORS[abs(hash(lab)) % len(FALLBACK_COLORS)]
-                colors.append(col)
-
-            fig2 = px.pie(names=labels, values=values, title=f'')
-            fig2.update_traces(textinfo='percent+label', textfont=dict(color='#f8f9fa'), marker=dict(colors=colors, line=dict(color='rgba(255,255,255,0.06)', width=1)))
-        else:
-            fig2 = go.Figure()
-            fig2.update_layout(title='No damage breakdown available')
-        apply_dark_theme(fig2)
-
-        return fig1, fig2
+    # Callback: toggle damage limit visibility
+    @app.callback(
+        Output('damage-limit-input', 'style'),
+        Input('damage-limit-switch', 'value'),
+    )
+    def toggle_damage_limit(show):
+        style = {'display': 'flex'} if show else {'display': 'none'}
+        return style
