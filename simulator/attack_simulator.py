@@ -145,7 +145,7 @@ class AttackSimulator:
         :param flat_dmg: Flat damage to be added to the roll, e.g., in 2d6+3 this value is 3
         :return: int, Damage roll results
         """
-        if num_dice == 0:  # 0 num_dice resembles flat damage, i.e., no roll is performed ("Massive Critical: 80" is flat)
+        if num_dice == 0 or num_sides == 0:  # no roll is performed, return only flat damage
             return flat_dmg
         else:
             total_dmg_roll = 0

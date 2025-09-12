@@ -1,6 +1,6 @@
 # Third-party imports
 import dash
-from dash import dcc, html, Input, Output, State, ctx, ALL
+from dash import dcc, html
 import dash_bootstrap_components as dbc
 
 # Local imports
@@ -15,6 +15,7 @@ from components.plots import build_plots_tab
 import callbacks.ui_callbacks as cb_ui
 import callbacks.core_callbacks as cb_core
 import callbacks.plots_callbacks as cb_plots
+import callbacks.validation_callbacks as cb_validation
 
 
 # Create a Config instance
@@ -127,6 +128,7 @@ app.layout = dbc.Container([
 cb_ui.register_ui_callbacks(app, cfg)
 cb_core.register_core_callbacks(app, cfg)
 cb_plots.register_plots_callbacks(app)
+cb_validation.register_validation_callbacks(app, cfg)
 
 if __name__ == '__main__':
     app.run(debug=True)

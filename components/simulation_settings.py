@@ -12,18 +12,17 @@ def build_immunity_inputs(immunities_dict):
     rows = []
     for name, val in immunities_dict.items():
         imm_label = dbc.Label(
-            name.title() + ":",
+            name.title() + ":"
         )
 
         imm_input = dbc.Input(
             id={'type': 'immunity-input', 'name': name},
             type='number',
             value=val * 100,  # default as percentage
-            min=-100,
-            max=100,
             step=1,
             persistence=True,
             persistence_type=persist_type,
+            debounce=True,
             style={'height': '1.6em'},
         )
 
@@ -80,8 +79,10 @@ def build_simulation_settings(cfg):
                         id='target-ac-input',
                         type='number',
                         value=cfg.TARGET_AC,
+                        step=1,
                         persistence=True,
                         persistence_type=persist_type,
+                        debounce=True,
                     ), xs=6, md=6),
                     dbc.Tooltip(
                         "Target Armor Class (AC) to hit against.",
@@ -101,11 +102,10 @@ def build_simulation_settings(cfg):
                         id='rounds-input',
                         type='number',
                         value=cfg.ROUNDS,
-                        min=1,
-                        max=30000,
                         step=1,
                         persistence=True,
                         persistence_type=persist_type,
+                        debounce=True,
                     ), xs=6, md=6),
                     dbc.Tooltip(
                         "Simulation will stop when either the max number of rounds or the convergence criteria are met.",
@@ -128,8 +128,10 @@ def build_simulation_settings(cfg):
                         id='damage-limit-input',
                         type='number',
                         value=cfg.DAMAGE_LIMIT,  # default value
+                        step=1,
                         persistence=True,
                         persistence_type=persist_type,
+                        debounce=True,
                         style={'display': 'none'},
                     ), xs=6, md=6),
                     dbc.Tooltip(
@@ -167,10 +169,9 @@ def build_simulation_settings(cfg):
                         id='relative-change-input',
                         type='number',
                         value=cfg.CHANGE_THRESHOLD * 100,   # convert to percentage
-                        min=0,
-                        max=100,
                         persistence=True,
                         persistence_type=persist_type,
+                        debounce=True,
                     ), xs=5, md=5),
                     dbc.Col(html.Span("%"), xs=1, md=1),
                     dbc.Tooltip(
@@ -193,10 +194,9 @@ def build_simulation_settings(cfg):
                         id='relative-std-input',
                         type='number',
                         value=cfg.STD_THRESHOLD * 100,  # convert to percentage
-                        min=0,
-                        max=100,
                         persistence=True,
                         persistence_type=persist_type,
+                        debounce=True,
                     ), xs=5, md=5),
                     dbc.Col(html.Span("%"), xs=1, md=1),
                     dbc.Tooltip(

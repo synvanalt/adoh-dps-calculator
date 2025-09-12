@@ -21,8 +21,10 @@ def build_character_settings(cfg):
                 id='ab-input',
                 type='number',
                 value=cfg.AB,
+                step=1,
                 persistence=True,
-                persistence_type=persist_type
+                persistence_type=persist_type,
+                debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
                 "AB input should include any attack penalties you may have (Flurry, Blinding Speed, Rapid Shot). "
@@ -42,8 +44,10 @@ def build_character_settings(cfg):
                 id='ab-capped-input',
                 type='number',
                 value=cfg.AB_CAPPED,
+                step=1,
                 persistence=True,
-                persistence_type=persist_type
+                persistence_type=persist_type,
+                debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
                 "Maximum AB (capped) that can be used for attack rolls. "
@@ -132,8 +136,10 @@ def build_character_settings(cfg):
                 id='mighty-input',
                 type='number',
                 value=cfg.MIGHTY,
+                step=1,
                 persistence=True,
                 persistence_type=persist_type,
+                debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
                 "Used for applying the correct Strength-based bonus physical damage for ammo-based ranged weapons.",
@@ -153,8 +159,10 @@ def build_character_settings(cfg):
                 id='enhancement-bonus-input',
                 type='number',
                 value=cfg.ENHANCEMENT_BONUS,
+                step=1,
                 persistence=True,
                 persistence_type=persist_type,
+                debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
                 "Enhancement damage bonus from weapon (ignored if ammo-based ranged weapons, overwritten if Scythe).",
@@ -173,8 +181,10 @@ def build_character_settings(cfg):
                 id='str-mod-input',
                 type='number',
                 value=cfg.STR_MOD,
+                step=1,
                 persistence=True,
                 persistence_type=persist_type,
+                debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
                 "Used for applying the correct Strength-based bonus physical damage.",
