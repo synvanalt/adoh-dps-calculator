@@ -3,10 +3,10 @@
 
 dash
 dash-bootstrap-components
+plotly
+numpy
 pandas
 seaborn
 matplotlib
-numpy
-diskcache
+dash[diskcache]
 gunicorn
-plotly
