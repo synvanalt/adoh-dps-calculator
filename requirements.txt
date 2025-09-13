@@ -7,5 +7,6 @@ pandas
 seaborn
 matplotlib
 numpy
+diskcache
 gunicorn
 plotly

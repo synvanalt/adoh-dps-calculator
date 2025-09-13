@@ -231,44 +231,17 @@ def register_ui_callbacks(app, cfg):
         return dash.no_update
 
 
-    # Callback: disable inputs and show spinner when calculation starts
-    @app.callback(
-        Output('loading-overlay', 'style', allow_duplicate=True),
-        [Input('calculate-button', 'n_clicks'),
-         Input('recalculate-button', 'n_clicks')],
-        prevent_initial_call=True
-    )
-    def toggle_overlay(n_clicks_calc, n_clicks_recalc):
-        if n_clicks_calc or n_clicks_recalc:
-            # Show overlay
-            return {
-                "position": "fixed",
-                "top": 0,
-                "left": 0,
-                "width": "100%",
-                "height": "100%",
-                "backgroundColor": "rgba(0, 0, 0, 0.5)",
-                "display": "flex",  # flex to center spinner
-                "justifyContent": "center",
-                "alignItems": "center",
-                "zIndex": 9999,
-            }
-        else:
-            # Hide overlay
-            return {"display": "none"}
-
-
     # Callback: close error modal
     @app.callback(
-        Output("global-error-modal", "is_open", allow_duplicate=True),
+        Output('global-error-modal', 'is_open', allow_duplicate=True),
         Output('loading-overlay', 'style', allow_duplicate=True),
-        Input("close-global-error", "n_clicks"),
-        State("global-error-modal", "is_open"),
+        Input('close-global-error', 'n_clicks'),
+        State('global-error-modal', 'is_open'),
         prevent_initial_call=True
     )
     def close_error_modal(n_clicks, is_open):
         if n_clicks:
-            return not is_open, {"display": "none"}
+            return not is_open, {'display': 'none'}
         else:
             return dash.no_update, dash.no_update
 
@@ -282,32 +255,6 @@ def register_ui_callbacks(app, cfg):
         if results:
             return 'results'
         return dash.no_update
-
-
-    # Callback: re-enable inputs after calculation
-    @app.callback(
-        Output('loading-overlay', 'style', allow_duplicate=True),
-        [Input('intermediate-value', 'data')],
-        prevent_initial_call=True
-    )
-    def toggle_overlay(results):
-        if results:
-            # Hide overlay
-            return {"display": "none"}
-        else:
-            # Show overlay
-            return {
-                "position": "fixed",
-                "top": 0,
-                "left": 0,
-                "width": "100%",
-                "height": "100%",
-                "backgroundColor": "rgba(0, 0, 0, 0.5)",
-                "display": "flex",  # flex to center spinner
-                "justifyContent": "center",
-                "alignItems": "center",
-                "zIndex": 9999,
-            }
 
 
     # Callback: toggle target immunities inputs

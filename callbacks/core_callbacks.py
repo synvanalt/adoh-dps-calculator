@@ -5,7 +5,7 @@ from functools import wraps
 
 # Third-party imports
 import dash
-from dash import html, Input, Output, State, ALL
+from dash import html, Input, Output, State, ALL, ctx
 import dash_bootstrap_components as dbc
 import pandas as pd
 
@@ -16,8 +16,20 @@ from simulator.config import Config
 
 def register_core_callbacks(app, cfg):
 
+    spinner_style = {
+        'display': 'flex',
+        'justifyContent': 'center',
+        'alignItems': 'center',
+        'position': 'fixed',
+        'top': 0,
+        'left': 0,
+        'width': '100%',
+        'height': '100%',
+        'zIndex': 9999,
+    }
+
     # Callback: decorator to catch exceptions
-    def with_error_modal(app_name, outputs, inputs, states=None):
+    def with_error_modal(app_name, outputs, inputs, states=None, **callback_kwargs):
         """
         Wraps a callback so that any exception is caught and shown in a global modal.
         outputs: list of Outputs from your normal callback +
@@ -26,7 +38,7 @@ def register_core_callbacks(app, cfg):
         """
         states = states or []
         def decorator(func):
-            @app_name.callback(outputs, inputs, states, prevent_initial_call=True)
+            @app_name.callback(outputs, inputs, states, **callback_kwargs)
             @wraps(func)
             def wrapper(*args, **kwargs):
                 try:
@@ -51,11 +63,14 @@ def register_core_callbacks(app, cfg):
             Output('is-calculating', 'data'),
             Output('intermediate-value', 'data'),
             Output('config-store', 'data'),
-            Output("global-error-body", "children"),         # extra: error text
-            Output("global-error-modal", "is_open")          # extra: open modal
+            Output('progress-text', 'children'),
+            Output('global-error-body', 'children'),         # extra: error text
+            Output('global-error-modal', 'is_open')          # extra: open modal
         ],
         inputs=[
-            Input('loading-overlay', 'style'),
+            # Input('loading-overlay', 'style'),
+            Input('calculate-button', 'n_clicks'),
+            Input('recalculate-button', 'n_clicks'),
         ],
         states=[
             State('config-store', 'data'),
@@ -88,73 +103,93 @@ def register_core_callbacks(app, cfg):
             State('target-immunities-switch', 'value'),
             State({'type': 'immunity-input', 'name': ALL}, 'value')
         ],
+        background=True,  # runs in a worker thread automatically
+        cancel=[Input('cancel-calc-button', 'n_clicks')],   # Cancel operation button
+        progress=[
+            Output('progress-text', 'children'),
+            Output('progress-bar', 'value'),
+            Output('progress-bar', 'max')
+        ],  # streamed progress
+        running=[
+            (Output('calculate-button', 'disabled'), True, False),
+            (Output('recalculate-button', 'disabled'), True, False),
+            (Output('reset-button', 'disabled'), True, False),
+            (Output('progress-modal', 'is_open'), True, False),
+            (Output('loading-overlay', 'style'), spinner_style, {'display': 'none'}),
+            (Output('progress-text', 'children'), "Warming up...", "Done!"),
+            (Output('progress-bar', 'value'), 0, 100),
+        ],  # Disable buttons & clear progress modal when calc starts, re-enable buttons when finishes
+        prevent_initial_call=True
     )
-    def run_calculation(spinner, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_bonus,
+    def run_calculation(set_progress, _, __, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_bonus,
                         str_mod, two_handed, weaponmaster, keen, improved_crit, shape_weapon_override, shape_weapon,
                         add_dmg_state, add_dmg1, add_dmg2, add_dmg3,
                         weapons, target_ac, rounds, dmg_limit_flag, dmg_limit, dmg_vs_race,
                         relative_change, relative_std, immunity_flag, immunity_values):
 
-        # if not ctx.triggered_id or not weapons:
-        if spinner['display'] == 'none' or not weapons:
-            return False, dash.no_update, current_cfg, dash.no_update, False
+        if not ctx.triggered_id or not weapons:
+        # if spinner['display'] == 'none' or not weapons:
+            return False, dash.no_update, current_cfg, dash.no_update, dash.no_update, False
 
         # if ctx.triggered_id == 'calculate-button' or ctx.triggered_id == 'recalculate-button':
-        if spinner['display'] == 'flex':
-            print("Starting simulation...")
-            # Start calculation
-            if current_cfg is None:
-                # fallback
-                current_cfg = asdict(cfg)
-                print('current_cfg was None and is initialized')
+        # if spinner['display'] == 'flex':
+        print("Starting simulation...")
+        # Start calculation
+        if current_cfg is None:
+            # fallback
+            current_cfg = asdict(cfg)
+            print("current_cfg was None and is initialized")
 
-            # build config dict instead of mutating globals
-            current_cfg['AB'] = ab
-            current_cfg['AB_CAPPED'] = ab_capped
-            current_cfg['AB_PROG'] = ab_prog
-            current_cfg['TOON_SIZE'] = toon_size
-            current_cfg['COMBAT_TYPE'] = combat_type
-            current_cfg['MIGHTY'] = mighty
-            current_cfg['ENHANCEMENT_BONUS'] = enhancement_bonus
-            current_cfg['STR_MOD'] = str_mod
-            current_cfg['TWO_HANDED'] = two_handed
-            current_cfg['WEAPONMASTER'] = weaponmaster
-            current_cfg['KEEN'] = keen
-            current_cfg['IMPROVED_CRIT'] = improved_crit
-            current_cfg['SHAPE_WEAPON_OVERRIDE'] = shape_weapon_override
-            current_cfg['SHAPE_WEAPON'] = shape_weapon
-            current_cfg['TARGET_AC'] = target_ac
-            current_cfg['ROUNDS'] = rounds
-            current_cfg['DAMAGE_LIMIT_FLAG'] = dmg_limit_flag
-            current_cfg['DAMAGE_LIMIT'] = dmg_limit
-            current_cfg['DAMAGE_VS_RACE'] = dmg_vs_race
-            current_cfg['CHANGE_THRESHOLD'] = relative_change / 100     # convert to fraction
-            current_cfg['STD_THRESHOLD'] = relative_std / 100           # convert to fraction
-            current_cfg['TARGET_IMMUNITIES_FLAG'] = immunity_flag
+        # build config dict instead of mutating globals
+        current_cfg['AB'] = ab
+        current_cfg['AB_CAPPED'] = ab_capped
+        current_cfg['AB_PROG'] = ab_prog
+        current_cfg['TOON_SIZE'] = toon_size
+        current_cfg['COMBAT_TYPE'] = combat_type
+        current_cfg['MIGHTY'] = mighty
+        current_cfg['ENHANCEMENT_BONUS'] = enhancement_bonus
+        current_cfg['STR_MOD'] = str_mod
+        current_cfg['TWO_HANDED'] = two_handed
+        current_cfg['WEAPONMASTER'] = weaponmaster
+        current_cfg['KEEN'] = keen
+        current_cfg['IMPROVED_CRIT'] = improved_crit
+        current_cfg['SHAPE_WEAPON_OVERRIDE'] = shape_weapon_override
+        current_cfg['SHAPE_WEAPON'] = shape_weapon
+        current_cfg['TARGET_AC'] = target_ac
+        current_cfg['ROUNDS'] = rounds
+        current_cfg['DAMAGE_LIMIT_FLAG'] = dmg_limit_flag
+        current_cfg['DAMAGE_LIMIT'] = dmg_limit
+        current_cfg['DAMAGE_VS_RACE'] = dmg_vs_race
+        current_cfg['CHANGE_THRESHOLD'] = relative_change / 100     # convert to fraction
+        current_cfg['STD_THRESHOLD'] = relative_std / 100           # convert to fraction
+        current_cfg['TARGET_IMMUNITIES_FLAG'] = immunity_flag
 
-            # Map immunity inputs back into a dictionary (normalize % -> fraction)
-            current_cfg['TARGET_IMMUNITIES'] = {
-                name: val / 100
-                for name, val in zip(cfg.TARGET_IMMUNITIES.keys(), immunity_values)
-            }
+        # Map immunity inputs back into a dictionary (normalize % -> fraction)
+        current_cfg['TARGET_IMMUNITIES'] = {
+            name: val / 100
+            for name, val in zip(cfg.TARGET_IMMUNITIES.keys(), immunity_values)
+        }
 
-            # Update additional damage sources
-            current_cfg['ADDITIONAL_DAMAGE'] = {
-                key: [add_dmg_state[idx], {next(iter(val[1].keys())): [add_dmg1[idx], add_dmg2[idx], add_dmg3[idx]]}]
-                for idx, (key, val) in enumerate(cfg.ADDITIONAL_DAMAGE.items())
-            }
+        # Update additional damage sources
+        current_cfg['ADDITIONAL_DAMAGE'] = {
+            key: [add_dmg_state[idx], {next(iter(val[1].keys())): [add_dmg1[idx], add_dmg2[idx], add_dmg3[idx]]}]
+            for idx, (key, val) in enumerate(cfg.ADDITIONAL_DAMAGE.items())
+        }
 
-            # Calculate DPS for all selected weapons
-            results_dict = {}
-            user_cfg = Config(**current_cfg)    # convert dict back to Config object
-            for weapon in weapons:
-                # print(f'Running simulation for {weapon} with config:\n{user_cfg.__repr__()}\n')
-                calculator = DamageSimulator(weapon, user_cfg)
-                results_dict[weapon] = calculator.simulate_dps()
+        # Calculate DPS for all selected weapons
+        total = len(weapons)
+        user_cfg = Config(**current_cfg)    # convert dict back to Config object
+        results_dict = {}
+        for i, weapon in enumerate(weapons, start=1):
+            # Send progress update to browser
+            set_progress((f"Simulating {weapon}...  ({i}/{total})", str(i), str(total)))
 
-            return False, results_dict, current_cfg, dash.no_update, False
+            # Run the heavy calculation:
+            calculator = DamageSimulator(weapon, user_cfg)
+            results_dict[weapon] = calculator.simulate_dps()
 
-        return False, dash.no_update, current_cfg, dash.no_update, False
+
+        return False, results_dict, current_cfg, "Done!", dash.no_update, False
 
 
     # Callback: update results based on stored calculation results

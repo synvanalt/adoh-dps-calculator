@@ -1,6 +1,7 @@
 # Third-party imports
 import dash
-from dash import dcc, html
+import diskcache
+from dash import dcc, html, DiskcacheManager
 import dash_bootstrap_components as dbc
 
 # Local imports
@@ -12,6 +13,7 @@ from components.simulation_settings import build_simulation_settings
 from components.results_tab import build_results_tab
 from components.reference_tab import build_reference_info_tab
 from components.plots import build_plots_tab
+from components.progress_modal import build_progress_elements
 import callbacks.ui_callbacks as cb_ui
 import callbacks.core_callbacks as cb_core
 import callbacks.plots_callbacks as cb_plots
@@ -21,10 +23,18 @@ import callbacks.validation_callbacks as cb_validation
 # Create a Config instance
 cfg = Config()
 
+# Diskcache manager to store job state
+cache = diskcache.Cache('./cache')
+background_callback_manager = DiskcacheManager(cache)
+
 # Initialize the Dash app with Bootstrap theme
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css])
-server = app.server   # <-- important for Render
+app = dash.Dash(
+    __name__,
+    background_callback_manager=background_callback_manager,
+    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css]
+)
+server = app.server   # for online deployment
 
 
 # Force mobile viewport scaling and Bootstrap dark mode
@@ -53,18 +63,32 @@ app.index_string = """
 # Update app layout to use modularized components
 app.layout = dbc.Container([
     dcc.Store(id='config-store', storage_type='session'),
-    dcc.Store(id='intermediate-value'),  # Store for calculation results
-    dcc.Store(id='is-calculating', data=False),  # Store for tracking calculation state
+    dcc.Store(id='intermediate-value'),             # Store for calculation results
     dcc.Store(id='immunities-store', data=cfg.TARGET_IMMUNITIES, storage_type='session'),  # keeps user edits
+    dcc.Store(id='is-calculating', data=False),     # Store for tracking calculation state
+    dcc.Store(id='calc-progress', data={'current': 0, 'total': 0, 'results': {}}),
+    dcc.Interval(id='calc-interval', interval=200, disabled=True),  # ticks while calculating
+
 
     # Navbar
     html.Div(build_navbar()),
+
+    # Add progress components
+    build_progress_elements(),
 
     # Dark overlay with spinner during calculation
     html.Div(
         id='loading-overlay',
         children=dbc.Spinner(color='light', size='lg', type='border'),
-        style={'display': 'none'}
+        style={
+            'display': 'none',
+            'position': 'fixed',
+            'top': 0,
+            'left': 0,
+            'width': '100%',
+            'height': '100%',
+            'zIndex': 9999,
+        }
     ),
 
     # Error modal to catch exceptions in risky calculation part
