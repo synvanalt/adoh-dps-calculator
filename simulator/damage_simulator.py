@@ -8,8 +8,6 @@ from collections import deque
 import statistics
 import math
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 class DamageSimulator:
@@ -318,27 +316,3 @@ class DamageSimulator:
         damage_sums = self.attack_sim.damage_immunity_reduction(damage_sums, imm_factors)
 
         return damage_sums
-
-    def plot_dps(self):
-        # Prepare dataframe for seaborn
-        rounds = list(range(1, len(self.dps_rolling_avg) + 1))
-        df = pd.DataFrame({
-            "Round": rounds,
-            "MeanDPS": self.dps_rolling_avg,
-            # "LowerCI": [m - e for m, e in zip(dps_means, dps_moes)],
-            # "UpperCI": [m + e for m, e in zip(dps_means, dps_moes)]
-        })
-
-        # Plot with seaborn
-        plt.figure(figsize=(10, 6))
-        sns.lineplot(data=df, x="Round", y="MeanDPS", label="Mean DPS", color="blue")
-
-        # Add the confidence interval as a filled area
-        # plt.fill_between(df["Round"], df["LowerCI"], df["UpperCI"], alpha=0.2, color="blue", label="95% CI")
-
-        plt.xlabel("Rounds simulated")
-        plt.ylabel("DPS")
-        plt.title("DPS Convergence with Margin of Error")
-        plt.legend()
-        plt.grid(True)
-        plt.show()

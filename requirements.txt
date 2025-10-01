@@ -6,7 +6,5 @@ dash-bootstrap-components
 plotly
 numpy
 pandas
-seaborn
-matplotlib
 dash[diskcache]
 gunicorn
