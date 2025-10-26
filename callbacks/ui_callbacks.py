@@ -43,7 +43,7 @@ def register_ui_callbacks(app, cfg):
 
             if shape_weapon_override:  # Override the weapon properties with the selected shape weapon
                 base_weapon = shape_weapon
-                override_msg = f" (overridden by '{base_weapon}')"
+                override_msg = f" (overwritten with '{base_weapon}')"
             else:
                 override_msg = ""
 

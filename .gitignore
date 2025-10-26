@@ -8,6 +8,9 @@ __pycache__/
 *.pyd
 *.pyo
 
+# Cache - Dash Diskcace
+.cache/
+
 # Manual scripts
 run_script.py
 

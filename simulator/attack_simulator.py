@@ -167,7 +167,13 @@ class AttackSimulator:
             target_imms[dmg_type_name] = current_imm + imm_factor
 
         for dmg_type_name, dmg_value in damage_sums.items():
-            corrected_dmg_type_name = 'fire' if dmg_type_name == 'fire_fw' else dmg_type_name
+            dmg_name_dict = {
+                'fire_fw': 'fire',    # Fire from Flame Weapon is treated as normal fire damage for immunities
+                'slashing': 'physical',
+                'piercing': 'physical',
+                'bludgeoning': 'physical'
+            }
+            corrected_dmg_type_name = dmg_name_dict.get(dmg_type_name, dmg_type_name)
 
             if corrected_dmg_type_name not in target_imms.keys():
                 raise KeyError(f"Damage type '{corrected_dmg_type_name}' not found in TARGET_IMMUNITIES dictionary.")

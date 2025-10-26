@@ -65,18 +65,7 @@ class DamageSimulator:
                             dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
                             self.dmg_dict_legend.setdefault(leg_key, []).append(dmg_entry)
 
-                    # vs_race_* mapping where val is a dict {actual_type: [dice, sides]}
-                    elif 'vs_race' in key and isinstance(val, dict):
-                        if not self.cfg.DAMAGE_VS_RACE: # Check config DAMAGE_VS_RACE flag
-                            continue                    # Ignore damage entry if flag off
-                        actual_type, nums = next(iter(val.items()))
-                        dice = nums[0]
-                        sides = nums[1]
-                        flat = nums[2] if len(nums) > 2 else None
-                        dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
-                        self.dmg_dict.setdefault(actual_type, []).append(dmg_entry)
-
-                    # Regular damage entries, e.g., 'fire': [dice, sides] or 'physical': [dice, sides, flat]
+                    # Regular damage entries, e.g., 'fire': [dice, sides] or 'slashing': [dice, sides, flat]
                     else:
                         dice = val[0]
                         sides = val[1]
