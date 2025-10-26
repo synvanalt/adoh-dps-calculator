@@ -255,7 +255,9 @@ class DamageSimulator:
         dpr_crit_imm = self.total_dmg_crit_imm / round_num
         dph = self.total_dmg / self.stats.hits
         dph_crit_imm = self.total_dmg_crit_imm / self.stats.hits
+        warning = f">>> WARNING: Duplicate weapon damage bonus detected! Using higher damage values where applicable. <<<\n\n" if self.weapon.weapon_damage_stack_warning else ""
         summary = (
+            f"{warning}"
             f"AB: {self.attack_sim.attack_prog} | Weapon: {self.weapon.name_purple} | Crit: {self.weapon.crit_threat}-20/x{self.weapon.crit_multiplier} | "
             f"Target AC: {self.cfg.TARGET_AC} | Rounds averaged: {round_num}\n"
             f"DPS (Crit allowed | immune): {dps_mean:.2f} ± {dps_error:.2f} | {dps_crit_imm_mean:.2f} ± {dps_crit_imm_error:.2f}\n"

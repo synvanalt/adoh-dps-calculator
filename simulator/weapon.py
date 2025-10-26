@@ -8,6 +8,7 @@ class Weapon:
         self.name_base = weapon_name.split('_')[0]      # Example: Convert 'Dagger_PK' to 'Dagger'
         self.name_purple = weapon_name                  # Keep the full name 'Dagger_PK' for purple weapons management
         self.physical_dmg_types = ['slashing', 'piercing', 'bludgeoning']   # Ordered by game priority
+        self.weapon_damage_stack_warning = False
 
         # Validate that the weapon exists in WEAPON_PROPERTIES
         if self.name_base not in WEAPON_PROPERTIES:
@@ -150,6 +151,7 @@ class Weapon:
 
             elif dmg_type_eb in data_dict.keys():
                 avg_dmg_purple = calculate_avg_dmg(data_dict[dmg_type_eb])
+                self.weapon_damage_stack_warning = True
                 # Compare average damages and keep the higher one (no stacking of same physical damage type):
                 if avg_dmg_eb > avg_dmg_purple:
                     data_dict[dmg_type_eb] = dmg_values_eb
