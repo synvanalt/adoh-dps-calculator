@@ -9,7 +9,7 @@ __pycache__/
 *.pyo
 
 # Cache - Dash Diskcace
-.cache/
+cache/
 
 # Manual scripts
 run_script.py
