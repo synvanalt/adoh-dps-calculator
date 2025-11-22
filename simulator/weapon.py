@@ -85,9 +85,9 @@ class Weapon:
         """
         :return: The flat physical damage added by Strength of the character
         """
-        throwing_weapons = ['Darts', 'Throwing Axe']  # Throwing weapons that have "auto-mighty" property
+        auto_mighty_throwing_weapons = ['Darts', 'Throwing Axes']  # Throwing weapons that have "auto-mighty" property
 
-        if self.name_base in throwing_weapons:  # Ranged weapons, but only for throwing weapons
+        if self.name_base in auto_mighty_throwing_weapons:  # Ranged weapons, but only for throwing weapons
             str_dmg = self.cfg.STR_MOD
         elif self.cfg.COMBAT_TYPE == 'melee':
             str_dmg = self.cfg.STR_MOD * 2 if self.cfg.TWO_HANDED else self.cfg.STR_MOD
