@@ -84,7 +84,7 @@ class AttackSimulator:
         legendary = purple_props.get('legendary') if isinstance(purple_props, dict) else None
         if legendary:
             proc = legendary.get('proc')
-            if isinstance(proc, (float, int)):  # Proc is float (percentage)
+            if isinstance(proc, (float, int)):  # Proc is percentage (numeric)
                 legend_proc_rate = float(proc)
             elif isinstance(proc, str):         # Proc is 'on_crit'
                 legend_proc_rate = self.get_crit_chance() / self.get_hit_chance()   # Crit % out of total HITS

@@ -87,12 +87,12 @@ class Weapon:
         """
         auto_mighty_throwing_weapons = ['Darts', 'Throwing Axes']  # Throwing weapons that have "auto-mighty" property
 
-        if self.name_base in auto_mighty_throwing_weapons:  # Ranged weapons, but only for throwing weapons
+        if self.name_base in auto_mighty_throwing_weapons:  # Ranged weapons, but only for auto-mighty throwing weapons
             str_dmg = self.cfg.STR_MOD
+        elif self.cfg.COMBAT_TYPE == 'ranged':  # Ranged weapons, excluding auto-mighty throwing weapons
+            str_dmg = min(self.cfg.STR_MOD, self.cfg.MIGHTY)
         elif self.cfg.COMBAT_TYPE == 'melee':
             str_dmg = self.cfg.STR_MOD * 2 if self.cfg.TWO_HANDED else self.cfg.STR_MOD
-        elif self.cfg.COMBAT_TYPE == 'ranged':  # Ranged weapons, excluding T.Axe
-            str_dmg = min(self.cfg.STR_MOD, self.cfg.MIGHTY)
         else:
             raise ValueError(f"Invalid combat type: {self.cfg.COMBAT_TYPE}. Expected 'melee' or 'ranged'.")
 
