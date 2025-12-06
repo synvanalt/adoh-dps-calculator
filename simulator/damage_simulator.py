@@ -144,7 +144,8 @@ class DamageSimulator:
                 outcome, roll = self.attack_sim.attack_roll(current_ab, defender_ac_modifier=legend_ac_reduction)
 
                 if outcome == 'miss':  # Attack missed the opponent, no damage is added
-                    if (self.cfg.ADDITIONAL_DAMAGE["Tenacious_Blow"][0] is True
+                    if ("Tenacious_Blow" in self.cfg.ADDITIONAL_DAMAGE
+                            and self.cfg.ADDITIONAL_DAMAGE["Tenacious_Blow"][0] is True
                             and self.weapon.name_base in ["Dire Mace", "Double Axe", "Two-Bladed Sword"]):
                         dmg_dict = {'pure': [[0, 0, 4]]}
                         if legend_imm_factors is None:

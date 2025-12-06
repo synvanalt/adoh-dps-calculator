@@ -56,14 +56,13 @@ WEAPON_PROPERTIES = {
 }
 PURPLE_WEAPONS = {
     # MELEE TWO-HANDED WEAPONS:
-    # HALBERD SNEAK WAS 2D6
     'Halberd': {'sneak': [2, 6], 'bludgeoning': [2, 12], 'massive': [0, 0, 200], 'legendary': {'proc': 0.05, 'fire': [1, 50], 'pure': [1, 50]}}, # Ahrim's Sacrifice, hold on hit, 43
     'Heavy Flail': {'slashing': [2, 12], 'negative': [2, 6], 'divine': [2, 6], 'magical': [2, 6], 'legendary': {'proc': 0.05, 'physical': [0, 0, 5]}}, # [0, 2.5, 'physical']], # None
     'Greataxe': {'bludgeoning': [2, 12], 'divine': [2, 8], 'fire': [2, 12], 'vs_race_undead': {'pure': [2, 12], 'enhancement': 12}}, # immune level drain
     'Greatsword_Desert': {'piercing': [2, 12], 'divine': [2, 8], 'fire': [2, 8], 'massive': [2, 12], 'pure': [1, 6]},  # Pure vs. Evil
     'Greatsword_Legion': {'piercing': [2, 12], 'divine': [2, 8], 'cold': [2, 8], 'massive': [2, 12], 'legendary': {'proc': 0.05, 'effect': 'sunder'}},  # Sunder effect (-2 AC for 2 rounds)
     'Greatsword_Tyr': {'bludgeoning': [2, 12], 'divine': [2, 12], 'fire': [2, 6], 'vs_race_evil': {'pure': [1, 6]}, 'legendary': {'proc': 0.05, 'divine': [3, 6]}},  # 5% Sunbeam Level 5 (3d6 Divine / 10d6 vs Undead)
-    'Scythe': {'bludgeoning': [2, 12], 'negative': [2, 6], 'pure': [2, 10], 'enhancement': 10},
+    'Scythe': {'bludgeoning': [2, 12], 'negative': [2, 6], 'pure': [2, 10]},    #  TBD 'enhancement': 10
     'Spear': {'bludgeoning': [2, 8], 'acid': [2, 6], 'cold': [2, 6], 'fire': [2, 6], 'electrical': [2, 6], 'legendary': {'proc': 0.05, 'acid': [4, 6], 'pure': [4, 6]}}, # Freedom
     'Trident_Fire': {'slashing': [2, 12], 'fire': [2, 12], 'magical': [1, 12], 'negative': [1, 12], 'legendary': {'proc': 0.05, 'fire': [10, 6]}},  # 5% Fireball lvl 10, Blind on-hit DC46 100% 1round, fire immune 20%, cold vuln 10%
     'Trident_Ice': {'slashing': [2, 12], 'cold': [2, 12], 'magical': [2, 10], 'massive': [1, 10], 'legendary': {'proc': 0.10, 'cold': [4, 6], 'pure': [4, 6]}},  # Icy veng

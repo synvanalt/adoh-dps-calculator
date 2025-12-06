@@ -11,7 +11,6 @@ class LegendEffect:
         self.weapon = weapon_obj
         self.attack_sim = attack_sim
 
-        # self.legend_effect_active = False  # Flag to track if purple effect is active (+2 AB, +5 Physical damage, etc.)
         self.legend_effect_duration = 5  # Duration of the legendary effect in rounds
         self.legend_attacks_left = 0  # Track remaining attacks that benefit from legendary property
 

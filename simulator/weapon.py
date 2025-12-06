@@ -166,7 +166,8 @@ class Weapon:
 
         # Remove Tenacious Blow damage bonus if not wielding a double-sided weapon
         additional_dmg_copy = deepcopy(self.cfg.ADDITIONAL_DAMAGE)
-        if (self.cfg.ADDITIONAL_DAMAGE["Tenacious_Blow"][0] is True
+        if ("Tenacious_Blow" in self.cfg.ADDITIONAL_DAMAGE
+                and self.cfg.ADDITIONAL_DAMAGE["Tenacious_Blow"][0] is True
                 and self.name_base not in ["Dire Mace", "Double Axe", "Two-Bladed Sword"]):
             additional_dmg_copy["Tenacious_Blow"][0] = False    # Turn off Tenacious Blow for this instance
 

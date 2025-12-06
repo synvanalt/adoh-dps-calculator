@@ -16,3 +16,4 @@ scripts/
 
 # Other files
 commitlint_guidelines.txt
+tests/README.md
