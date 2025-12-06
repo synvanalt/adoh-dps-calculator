@@ -176,28 +176,6 @@ def build_character_settings(cfg):
             ),
         ], class_name=''),
 
-        # dbc.Row([
-        #     dbc.Col(dbc.Label(
-        #         'Enhancement Bonus:',
-        #         html_for='enhancement-bonus-input',
-        #     ), xs=6, md=6),
-        #     dbc.Col(dbc.Input(
-        #         id='enhancement-bonus-input',
-        #         type='number',
-        #         value=cfg.ENHANCEMENT_BONUS,
-        #         step=1,
-        #         persistence=True,
-        #         persistence_type=persist_type,
-        #         debounce=True,
-        #     ), xs=6, md=6),
-        #     dbc.Tooltip(
-        #         "Enhancement damage bonus from weapon (ignored if ammo-based ranged weapons, overwritten if Scythe).",
-        #         target='enhancement-bonus-input',  # must match the component's id
-        #         placement='right',  # top, bottom, left, right
-        #         delay={'show': tooltip_delay},
-        #     ),
-        # ], class_name=''),
-
         dbc.Row([
             dbc.Col(dbc.Label(
                 'Strength Modifier:',
