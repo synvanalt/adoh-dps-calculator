@@ -733,7 +733,7 @@ class TestAttackSimulatorIntegration:
             KEEN=True,
             IMPROVED_CRIT=True,
             WEAPONMASTER=True,
-            ENHANCEMENT_BONUS=10
+            ENHANCEMENT_SET_BONUS=3
         )
         weapon = Weapon("Scimitar", cfg)
         simulator = AttackSimulator(weapon, cfg)

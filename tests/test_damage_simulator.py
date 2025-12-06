@@ -536,7 +536,7 @@ class TestDamageSimulatorConfigurations:
         cfg = Config(
             COMBAT_TYPE='melee',
             STR_MOD=21,
-            ENHANCEMENT_BONUS=10,
+            ENHANCEMENT_SET_BONUS=3,
             WEAPONMASTER=True,
             KEEN=True,
             ROUNDS=10
@@ -595,7 +595,7 @@ class TestDamageSimulatorConfigurations:
     def test_high_damage_multiplier_configuration(self):
         """Test simulator with maximum damage multipliers."""
         cfg = Config(
-            ENHANCEMENT_BONUS=10,
+            ENHANCEMENT_SET_BONUS=3,
             STR_MOD=30,
             WEAPONMASTER=True,
             KEEN=True,

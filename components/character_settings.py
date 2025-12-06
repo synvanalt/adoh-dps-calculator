@@ -152,25 +152,49 @@ def build_character_settings(cfg):
         # Character Stats
         dbc.Row([
             dbc.Col(dbc.Label(
-                'Enhancement Bonus:',
-                html_for='enhancement-bonus-input',
+                'Enhancement Set Bonus:',
+                html_for='enhancement-set-bonus-dropdown',
             ), xs=6, md=6),
-            dbc.Col(dbc.Input(
-                id='enhancement-bonus-input',
-                type='number',
-                value=cfg.ENHANCEMENT_BONUS,
-                step=1,
+            dbc.Col(dbc.Select(
+                id='enhancement-set-bonus-dropdown',
+                options=[
+                    {'label': '+1', 'value': 1},
+                    {'label': '+2', 'value': 2},
+                    {'label': '+3', 'value': 3}
+                ],
+                value=cfg.ENHANCEMENT_SET_BONUS,
                 persistence=True,
                 persistence_type=persist_type,
-                debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
-                "Enhancement damage bonus from weapon (ignored if ammo-based ranged weapons, overwritten if Scythe).",
-                target='enhancement-bonus-input',  # must match the component's id
+                "Set Bonus from Epic/Green/Purple/Vengeful gear, (ignored if ammo-based ranged weapon with Mighty properties). For example, +3 for Pure Green Vengeful set.",
+                target='enhancement-set-bonus-dropdown',  # must match the component's id
                 placement='right',  # top, bottom, left, right
                 delay={'show': tooltip_delay},
             ),
         ], class_name=''),
+
+        # dbc.Row([
+        #     dbc.Col(dbc.Label(
+        #         'Enhancement Bonus:',
+        #         html_for='enhancement-bonus-input',
+        #     ), xs=6, md=6),
+        #     dbc.Col(dbc.Input(
+        #         id='enhancement-bonus-input',
+        #         type='number',
+        #         value=cfg.ENHANCEMENT_BONUS,
+        #         step=1,
+        #         persistence=True,
+        #         persistence_type=persist_type,
+        #         debounce=True,
+        #     ), xs=6, md=6),
+        #     dbc.Tooltip(
+        #         "Enhancement damage bonus from weapon (ignored if ammo-based ranged weapons, overwritten if Scythe).",
+        #         target='enhancement-bonus-input',  # must match the component's id
+        #         placement='right',  # top, bottom, left, right
+        #         delay={'show': tooltip_delay},
+        #     ),
+        # ], class_name=''),
 
         dbc.Row([
             dbc.Col(dbc.Label(

@@ -80,7 +80,7 @@ def register_core_callbacks(app, cfg):
             State('toon-size-dropdown', 'value'),
             State('combat-type-dropdown', 'value'),
             State('mighty-input', 'value'),
-            State('enhancement-bonus-input', 'value'),
+            State('enhancement-set-bonus-dropdown', 'value'),
             State('str-mod-input', 'value'),
             State({'type': 'melee-switch', 'name': 'two-handed'}, 'value'),
             State({'type': 'melee-switch', 'name': 'weaponmaster'}, 'value'),
@@ -121,7 +121,7 @@ def register_core_callbacks(app, cfg):
         ],  # Disable buttons & clear progress modal when calc starts, re-enable buttons when finishes
         prevent_initial_call=True
     )
-    def run_calculation(set_progress, _, __, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_bonus,
+    def run_calculation(set_progress, _, __, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_set_bonus,
                         str_mod, two_handed, weaponmaster, keen, improved_crit, shape_weapon_override, shape_weapon,
                         add_dmg_state, add_dmg1, add_dmg2, add_dmg3,
                         weapons, target_ac, rounds, dmg_limit_flag, dmg_limit, dmg_vs_race,
@@ -147,7 +147,7 @@ def register_core_callbacks(app, cfg):
         current_cfg['TOON_SIZE'] = toon_size
         current_cfg['COMBAT_TYPE'] = combat_type
         current_cfg['MIGHTY'] = mighty
-        current_cfg['ENHANCEMENT_BONUS'] = enhancement_bonus
+        current_cfg['ENHANCEMENT_SET_BONUS'] = enhancement_set_bonus
         current_cfg['STR_MOD'] = str_mod
         current_cfg['TWO_HANDED'] = two_handed
         current_cfg['WEAPONMASTER'] = weaponmaster
