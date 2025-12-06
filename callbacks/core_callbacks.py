@@ -147,7 +147,7 @@ def register_core_callbacks(app, cfg):
         current_cfg['TOON_SIZE'] = toon_size
         current_cfg['COMBAT_TYPE'] = combat_type
         current_cfg['MIGHTY'] = mighty
-        current_cfg['ENHANCEMENT_SET_BONUS'] = enhancement_set_bonus
+        current_cfg['ENHANCEMENT_SET_BONUS'] = int(enhancement_set_bonus)
         current_cfg['STR_MOD'] = str_mod
         current_cfg['TWO_HANDED'] = two_handed
         current_cfg['WEAPONMASTER'] = weaponmaster
