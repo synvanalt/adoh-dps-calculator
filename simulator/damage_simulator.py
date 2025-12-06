@@ -7,7 +7,6 @@ from copy import deepcopy
 from collections import deque
 import statistics
 import math
-import pandas as pd
 
 
 class DamageSimulator:
@@ -116,6 +115,7 @@ class DamageSimulator:
         self.stats.init_zeroes_lists(self.attack_sim.attacks_per_round)
         total_rounds = self.cfg.ROUNDS
         round_num = 0
+        legend_imm_factors = None
 
         # Check if offhand attack are present in the attack progression
         if self.attack_sim.dual_wield:
@@ -144,7 +144,15 @@ class DamageSimulator:
                 outcome, roll = self.attack_sim.attack_roll(current_ab, defender_ac_modifier=legend_ac_reduction)
 
                 if outcome == 'miss':  # Attack missed the opponent, no damage is added
-                    continue
+                    if (self.cfg.ADDITIONAL_DAMAGE["Tenacious_Blow"][0] is True
+                            and self.weapon.name_base in ["Dire Mace", "Double Axe", "Two-Bladed Sword"]):
+                        dmg_dict = {'pure': [[0, 0, 4]]}
+                        if legend_imm_factors is None:
+                            legend_imm_factors = {}
+                        dmg_sums = self.get_damage_results(dmg_dict, legend_imm_factors)
+                        dmg_sums_crit_imm = dmg_sums
+                    else:
+                        continue
 
                 else:  # Attack hits, critical hit logic is managed within this part:
                     self.stats.hits += 1

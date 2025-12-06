@@ -1,5 +1,6 @@
 from weapons_db import WEAPON_PROPERTIES, PURPLE_WEAPONS
 from simulator.config import Config
+from copy import deepcopy
 
 
 class Weapon:
@@ -163,11 +164,17 @@ class Weapon:
         purple_props_updated = unpack_and_merge_vs_race(self.purple_props)
         purple_props_updated = merge_enhancement_bonus(purple_props_updated)
 
+        # Remove Tenacious Blow damage bonus if not wielding a double-sided weapon
+        additional_dmg_copy = deepcopy(self.cfg.ADDITIONAL_DAMAGE)
+        if (self.cfg.ADDITIONAL_DAMAGE["Tenacious_Blow"][0] is True
+                and self.name_base not in ["Dire Mace", "Double Axe", "Two-Bladed Sword"]):
+            additional_dmg_copy["Tenacious_Blow"][0] = False    # Turn off Tenacious Blow for this instance
+
         # Aggreagte all damage sources:
         dmg_src_dict = {
             'weapon_base_dmg': self.dmg,
             'weapon_bonus_dmg': purple_props_updated,
             'str_dmg': self.strength_bonus(),
-            'additional_dmg': [v[1] for v in self.cfg.ADDITIONAL_DAMAGE.values() if v[0] is True],
+            'additional_dmg': [v[1] for v in additional_dmg_copy.values() if v[0] is True],
         }
         return dmg_src_dict
