@@ -22,7 +22,7 @@ class Config:
     })
 
     # SIMULATION SETTINGS
-    DEFAULT_WEAPONS: List[str] = field(default_factory=lambda: ["Scythe"])
+    DEFAULT_WEAPONS: List[str] = field(default_factory=lambda: ["Spear"])
     ROUNDS: int = 15000
     DAMAGE_LIMIT_FLAG: bool = False
     DAMAGE_LIMIT: int = 6000
