@@ -13,9 +13,10 @@ class AttackSimulator:
         self.ab_capped = self.cfg.AB_CAPPED
         self.ab = self.cfg.AB if self.weapon.name_purple != 'Scythe' else self.ab_capped
 
-        attack_prog_name = self.cfg.AB_PROG
-        attack_prog_temp = deepcopy(self.cfg.AB_PROGRESSIONS[attack_prog_name])  # List of integers, looks like [0, -5, -15, -20, 0]
-        if 'Dual-Wield' in attack_prog_name:                                     # Get Dual-Wield penalty and apply to attack_prog
+        attack_prog_selected = self.cfg.AB_PROG
+        attack_prog_temp = deepcopy(self.cfg.AB_PROGRESSIONS[attack_prog_selected]) # List of integers, looks like [0, -5, -15, -20, 0]
+        self.dual_wield = True if 'Dual-Wield' in attack_prog_selected else False   # Boolean for Dual-Wield state
+        if self.dual_wield:     # Get Dual-Wield penalty and apply to attack_prog
             attack_prog_temp = self.apply_dual_wield_penalty(attack_prog_temp, self.cfg.TOON_SIZE)
 
         self.attack_prog = [(self.ab + ab_offset) for ab_offset in attack_prog_temp]
@@ -96,7 +97,7 @@ class AttackSimulator:
     def apply_dual_wield_penalty(self, attack_prog: list, toon_size: str):
         """
         Determine the Dual-Wield penalty and apply it to list of attacks AB offsets
-        :param attack_prog: List of Dual-Wield attacks AB offsets, e.g., [0, -5, -10, -15, '-dw_penalty', 0, -5]
+        :param attack_prog: List of Dual-Wield attacks AB offsets, e.g., [0, -5, -10, -15, 'dw_hasted', 0, -5]
         :param toon_size: Size of the attacker, in addition to weapon size, it's used to determine the DW penalty
         :return: List after applying the DW penalty, e.g., [-2, -7, -12, -17, 2, -2, -7]
         """
@@ -110,10 +111,28 @@ class AttackSimulator:
         else:  # All other combinations, practically rendering this config useless
             dw_penalty = -99  # Cannot Dual-Wield with this toon size and weapon size combination
 
-        hasted_attack_index = attack_prog.index('-dw_penalty')  # If DW, Haste attack doesn't suffer penalty
-        attack_prog[hasted_attack_index] = -1 * dw_penalty
-        self.ab = self.ab + dw_penalty
+        if "dw_hasted" in attack_prog:
+            hasted_attack_idx = attack_prog.index("dw_hasted")  # If DW, Haste attack doesn't suffer penalty
+            attack_prog[hasted_attack_idx] = -1 * dw_penalty
 
+            if ("dw_flurry" in attack_prog) and ("dw_bspeed" in attack_prog):
+                flurry_attack_idx = attack_prog.index("dw_flurry")  # If DW, Flurry should get -5 after Hasted attack
+                attack_prog[flurry_attack_idx] = -1 * dw_penalty - 5
+                bspeed_attack_idx = attack_prog.index("dw_bspeed")  # If DW, B.Speed should get -10 after Flurry attack
+                attack_prog[bspeed_attack_idx] = -1 * dw_penalty - 10
+
+            elif "dw_flurry" in attack_prog:
+                flurry_attack_idx = attack_prog.index("dw_flurry")  # If DW, Flurry should get -5 after Hasted attack
+                attack_prog[flurry_attack_idx] = -1 * dw_penalty - 5
+
+            elif "dw_bspeed" in attack_prog:
+                bspeed_attack_idx = attack_prog.index("dw_bspeed")  # If DW, B.Speed should get -5 after Hasted attack
+                attack_prog[bspeed_attack_idx] = -1 * dw_penalty - 5
+
+        else:
+            raise ValueError("Dual-Wield attack progression is missing 'dw_hasted' marker.")
+
+        self.ab = self.ab + dw_penalty
         return attack_prog
 
     def attack_roll(self, attacker_ab: int, defender_ac_modifier: int = 0):

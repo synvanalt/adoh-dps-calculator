@@ -104,7 +104,7 @@ PURPLE_WEAPONS = {
     'Morningstar': {'slashing': [2, 6], 'positive': [7, 6], 'massive': [1, 6]},  # divine extend, 10% pos immune
     'Rapier_Stinger': {'bludgeoning': [2, 12], 'acid': [2, 10], 'massive': [0, 0, 15], 'legendary': {'proc': 0.05, 'acid': [4, 6], 'pure': [4, 6]}},
     'Rapier_Touch': {'slashing': [2, 6], 'magical': [2, 6], 'cold': [2, 6], 'massive': [0, 0, 25], 'legendary': {'proc': 'on_crit', 'negative': [1, 8, 3]}},  # On-Crit Negative Energy Burst Level 5 (1d8+3 Negative), + pp skill
-    'Scimitar': {'bludgeoning': [7, 6], 'massive': [7, 6], 'legendary': {'proc': 'on_crit', 'effect': 'butcher_revenge'}},  # 5% phys immune, On-crit heal 2% missing HP
+    'Scimitar': {'bludgeoning': [7, 6], 'massive': [7, 6]},  # 5% phys immune, On-crit heal 2% missing HP
     'Warhammer_Dementia': {'slashing': [2, 8], 'positive': [2, 8], 'magical': [2, 8]},  # On-hit Confuse DC=44/50%/2rounds, On-hit 5% reduce Conc by 10
     'Warhammer_Mjolnir': {'slashing': [7, 6], 'electrical': [2, 6], 'legendary': {'proc': 0.05, 'electrical': [20, 6]}},  # On-hit Chain Lightining lvl 20
 

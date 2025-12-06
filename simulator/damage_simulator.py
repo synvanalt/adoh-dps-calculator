@@ -117,6 +117,19 @@ class DamageSimulator:
         total_rounds = self.cfg.ROUNDS
         round_num = 0
 
+        # Check if offhand attack are present in the attack progression
+        if self.attack_sim.dual_wield:
+            attack_prog_length = len(self.attack_sim.attack_prog)
+            offhand_attack_1_idx = attack_prog_length - 2   # First Offhand attack
+            offhand_attack_2_idx = attack_prog_length - 1   # Second Offhand attack
+            str_dmg = self.weapon.strength_bonus()                  # Find the STR bonus damage (again)
+            str_idx = self.dmg_dict['physical'].index(str_dmg['physical'])      # Store index of STR damage for halving it later
+
+        else:
+            offhand_attack_1_idx = None
+            offhand_attack_2_idx = None
+            str_idx = None
+
         for round_num in range(1, total_rounds + 1):
             total_round_dmg = 0
             total_round_dmg_crit_imm = 0
@@ -145,6 +158,11 @@ class DamageSimulator:
                     )
 
                     dmg_dict = deepcopy(self.dmg_dict)  # Prep dmg dict for CRIT calculation
+
+                    if self.attack_sim.dual_wield:  # Halve (and round down) Strength damage for offhand attacks
+                        if attack_idx in (offhand_attack_1_idx, offhand_attack_2_idx):
+                            current_str_flat_dmg = dmg_dict['physical'][str_idx][2]
+                            dmg_dict['physical'][str_idx][2] = math.floor(current_str_flat_dmg / 2)
 
                     dmg_sneak = dmg_dict.pop('sneak', [])                                                # Remove the 'sneak' dmg from crit multiplication
                     dmg_sneak_max = max(dmg_sneak, key=lambda sublist: sublist[0], default=None)         # Find the highest 'Sneak' dmg, can't stack sneak
