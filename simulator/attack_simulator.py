@@ -11,7 +11,7 @@ class AttackSimulator:
         self.weapon = weapon_obj
         self.defender_ac = self.cfg.TARGET_AC
         self.ab_capped = self.cfg.AB_CAPPED
-        self.ab = self.cfg.AB if self.weapon.name_purple != 'Scythe' else self.ab_capped
+        self.ab = self.calculate_attack_bonus()
 
         attack_prog_selected = self.cfg.AB_PROG
         attack_prog_temp = deepcopy(self.cfg.AB_PROGRESSIONS[attack_prog_selected]) # List of integers, looks like [0, -5, -15, -20, 0]
@@ -23,6 +23,18 @@ class AttackSimulator:
         self.attacks_per_round = len(self.attack_prog)
 
         (self.hit_chance_list, self.crit_chance_list, self.noncrit_chance_list) = self.calculate_hit_chances()
+
+    def calculate_attack_bonus(self):
+        """Calculate the attack bonus (AB) based on weapon enhancement and cap it if necessary"""
+        if self.weapon.purple_props['enhancement'] > 7:     # Handle special weapons, e.g., Scythe +10 Enhancement
+            ab = self.cfg.AB + (self.weapon.purple_props['enhancement'] - 7)
+            ab = min(ab, self.ab_capped)
+        elif self.cfg.DAMAGE_VS_RACE and 'enhancement' in self.weapon.purple_props[self.weapon.vs_race_key]:
+            ab = self.cfg.AB + (self.weapon.purple_props[self.weapon.vs_race_key]['enhancement'] - 7)
+            ab = min(ab, self.ab_capped)
+        else:
+            ab = self.cfg.AB
+        return ab
 
     def calculate_hit_chances(self):
         """

@@ -27,8 +27,10 @@ def build_character_settings(cfg):
                 debounce=True,
             ), xs=6, md=6),
             dbc.Tooltip(
-                "AB input should include any attack penalties you may have (Flurry, Blinding Speed, Rapid Shot). "
-                "If dual-wielding, input the AB without the dual-wield penalty (it's managed per weapon and character size).",
+                "Input should reflect your AB with a +7 purple weapon (plus set bonus). Extra AB for special "
+                "weapons with higher bonus (e.g., Scythe) are managed by simulator automatically. AB penalties for "
+                "extra attacks (e.g., Flurry, Blinding Speed, Rapid Shot) should be included in the input. Dual-wield "
+                "penalty should NOT be included, as simulator applies it automatically based on weapon and character size.",
                 target='ab-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
                 delay={'show': tooltip_delay},
@@ -51,8 +53,8 @@ def build_character_settings(cfg):
             ), xs=6, md=6),
             dbc.Tooltip(
                 "Maximum AB (capped) that can be used for attack rolls. "
-                "Important for simulation to apply the correct AB when Scythe (+20 EB) is used, "
-                "or when temporary AB bonuses are applied (Darts legend property).",
+                "Important for simulation to apply the correct AB when weapons with higher EB are used (e.g., Scythe), "
+                "or when temporary AB bonuses are applied (e.g., Darts legend property).",
                 target='ab-capped-input',  # must match the component's id
                 placement='right',  # top, bottom, left, right
                 delay={'show': tooltip_delay},
