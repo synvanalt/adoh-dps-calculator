@@ -29,7 +29,9 @@ class AttackSimulator:
         if self.weapon.purple_props['enhancement'] > 7:     # Handle special weapons, e.g., Scythe +10 Enhancement
             ab = self.cfg.AB + (self.weapon.purple_props['enhancement'] - 7)
             ab = min(ab, self.ab_capped)
-        elif self.cfg.DAMAGE_VS_RACE and 'enhancement' in self.weapon.purple_props[self.weapon.vs_race_key]:
+        elif (self.cfg.DAMAGE_VS_RACE
+              and self.weapon.vs_race_key in self.weapon.purple_props
+              and 'enhancement' in self.weapon.purple_props[self.weapon.vs_race_key]):
             ab = self.cfg.AB + (self.weapon.purple_props[self.weapon.vs_race_key]['enhancement'] - 7)
             ab = min(ab, self.ab_capped)
         else:

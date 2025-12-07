@@ -86,7 +86,9 @@ class Weapon:
         ammo_based_weapons = ['Heavy Crossbow', 'Light Crossbow', 'Longbow', 'Shortbow', 'Sling']
         if self.name_base in ammo_based_weapons:
             enhancement_dmg = 0
-        elif self.cfg.DAMAGE_VS_RACE and 'enhancement' in self.purple_props[self.vs_race_key]:
+        elif (self.cfg.DAMAGE_VS_RACE
+              and self.vs_race_key in self.purple_props
+              and 'enhancement' in self.purple_props[self.vs_race_key]):
             enhancement_dmg = self.purple_props[self.vs_race_key]['enhancement'] + self.cfg.ENHANCEMENT_SET_BONUS
         else:
             enhancement_dmg = self.purple_props['enhancement'] + self.cfg.ENHANCEMENT_SET_BONUS
