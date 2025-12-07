@@ -149,6 +149,9 @@ class Weapon:
                             if avg_new > avg_existing:
                                 merged_dict[sub_key] = sub_value
                             # If avg_new <= avg_existing, the existing value is kept (no change needed)
+                        elif sub_key == 'enhancement':
+                            # Skip enhancement here; it will be handled separately
+                            continue
                         else:
                             # No conflict, simply add the new key/value pair
                             merged_dict[sub_key] = sub_value
