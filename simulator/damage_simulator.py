@@ -152,6 +152,7 @@ class DamageSimulator:
                             legend_imm_factors = {}
                         dmg_sums = self.get_damage_results(dmg_dict, legend_imm_factors)
                         dmg_sums_crit_imm = dmg_sums
+                        legend_dmg_sums = {}  # No legend damage on miss, even with Tenacious Blow
                     else:
                         continue
 

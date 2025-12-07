@@ -6,16 +6,15 @@ def register_validation_callbacks(app, cfg):
 
     # VALIDATIONS SCOPE - CHARACTER SETTINGS
     validations_inputs = {
-        'ab-input':                 {'min': 0, 'max': 999, 'default': cfg.AB},
-        'ab-capped-input':          {'min': 0, 'max': 999, 'default': cfg.AB_CAPPED},
-        'mighty-input':             {'min': 0, 'max': 999, 'default': cfg.MIGHTY},
-        'enhancement-bonus-input':  {'min': 0, 'max': 999, 'default': cfg.ENHANCEMENT_BONUS},
-        'str-mod-input':            {'min': 0, 'max': 999, 'default': cfg.STR_MOD},
-        'target-ac-input':          {'min': 0, 'max': 999, 'default': cfg.TARGET_AC},
-        'rounds-input':             {'min': 1, 'max': 30000, 'default': cfg.ROUNDS},
-        'damage-limit-input':       {'min': 1, 'max': 9999999, 'default': cfg.DAMAGE_LIMIT},
-        'relative-change-input':    {'min': 0.001, 'max': 1, 'default': cfg.CHANGE_THRESHOLD},
-        'relative-std-input':       {'min': 0.001, 'max': 1, 'default': cfg.STD_THRESHOLD},
+        'ab-input':                         {'min': 0, 'max': 999, 'default': cfg.AB},
+        'ab-capped-input':                  {'min': 0, 'max': 999, 'default': cfg.AB_CAPPED},
+        'mighty-input':                     {'min': 0, 'max': 999, 'default': cfg.MIGHTY},
+        'str-mod-input':                    {'min': 0, 'max': 999, 'default': cfg.STR_MOD},
+        'target-ac-input':                  {'min': 0, 'max': 999, 'default': cfg.TARGET_AC},
+        'rounds-input':                     {'min': 1, 'max': 30000, 'default': cfg.ROUNDS},
+        'damage-limit-input':               {'min': 1, 'max': 9999999, 'default': cfg.DAMAGE_LIMIT},
+        'relative-change-input':            {'min': 0.001, 'max': 1, 'default': cfg.CHANGE_THRESHOLD},
+        'relative-std-input':               {'min': 0.001, 'max': 1, 'default': cfg.STD_THRESHOLD},
     }
 
     # VALIDATIONS SCOPE - ADDITIONAL DAMAGE
@@ -39,7 +38,6 @@ def register_validation_callbacks(app, cfg):
         [Output('ab-input', 'value', allow_duplicate=True),
          Output('ab-capped-input', 'value', allow_duplicate=True),
          Output('mighty-input', 'value', allow_duplicate=True),
-         Output('enhancement-bonus-input', 'value', allow_duplicate=True),
          Output('str-mod-input', 'value', allow_duplicate=True),
          Output('target-ac-input', 'value', allow_duplicate=True),
          Output('rounds-input', 'value', allow_duplicate=True),
@@ -49,7 +47,6 @@ def register_validation_callbacks(app, cfg):
         [Input('ab-input', 'value'),
          Input('ab-capped-input', 'value'),
          Input('mighty-input', 'value'),
-         Input('enhancement-bonus-input', 'value'),
          Input('str-mod-input', 'value'),
          Input('target-ac-input', 'value'),
          Input('rounds-input', 'value'),

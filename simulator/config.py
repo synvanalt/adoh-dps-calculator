@@ -22,7 +22,7 @@ class Config:
     })
 
     # SIMULATION SETTINGS
-    DEFAULT_WEAPONS: List[str] = field(default_factory=lambda: ["Scythe"])
+    DEFAULT_WEAPONS: List[str] = field(default_factory=lambda: ["Spear"])
     ROUNDS: int = 15000
     DAMAGE_LIMIT_FLAG: bool = False
     DAMAGE_LIMIT: int = 6000
@@ -60,7 +60,8 @@ class Config:
     TOON_SIZE: str = "M"        # "S" / "M" / "L"
     COMBAT_TYPE: str = "melee"  # "melee" or "ranged"
     MIGHTY: int = 0
-    ENHANCEMENT_BONUS: int = 10
+    # ENHANCEMENT_BONUS: int = 10
+    ENHANCEMENT_SET_BONUS: int = 3  # 1/2/3 (for example, +3 for Pure Vengeful set)
     STR_MOD: int = 21
     TWO_HANDED: bool = False
     WEAPONMASTER: bool = False

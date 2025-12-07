@@ -20,6 +20,7 @@ class Weapon:
         base_props = WEAPON_PROPERTIES[self.cfg.SHAPE_WEAPON] if self.cfg.SHAPE_WEAPON_OVERRIDE else WEAPON_PROPERTIES[self.name_base]
 
         self.purple_props = PURPLE_WEAPONS[self.name_purple]
+        self.vs_race_key = self.get_vs_race_key()
 
         dice = base_props['dmg'][0]
         sides = base_props['dmg'][1]
@@ -60,6 +61,17 @@ class Weapon:
 
         return multiplier
 
+    def get_vs_race_key(self):
+        """Check if there is any 'vs_race' entry inside purple weapon properties, if yes store the key name"""
+        vs_race_key = None
+        if self.cfg.DAMAGE_VS_RACE:
+            for key in self.purple_props.keys():
+                if "vs_race" in key:
+                    vs_race_key = key
+                    break  # Exit the loop once a match is found
+
+        return vs_race_key
+
     def enhancement_bonus(self):
         # Find the effective base damage type (dmg_type_eb):
         dmg_type_list = self.dmg_type.split(" & ") if "&" in self.dmg_type else [self.dmg_type]
@@ -72,14 +84,15 @@ class Weapon:
 
         # Assigning the correct damage bonus:
         ammo_based_weapons = ['Heavy Crossbow', 'Light Crossbow', 'Longbow', 'Shortbow', 'Sling']
-        if self.name_base == 'Scythe':
-            enhancement_dmg = 20
-        elif self.name_base == 'Dwarven Waraxe' and self.cfg.DAMAGE_VS_RACE:
-            enhancement_dmg = 12
-        elif self.name_base in ammo_based_weapons:
+        if self.name_base in ammo_based_weapons:
             enhancement_dmg = 0
+        elif (self.cfg.DAMAGE_VS_RACE
+              and self.vs_race_key in self.purple_props
+              and 'enhancement' in self.purple_props[self.vs_race_key]):
+            enhancement_dmg = self.purple_props[self.vs_race_key]['enhancement'] + self.cfg.ENHANCEMENT_SET_BONUS
         else:
-            enhancement_dmg = self.cfg.ENHANCEMENT_BONUS
+            enhancement_dmg = self.purple_props['enhancement'] + self.cfg.ENHANCEMENT_SET_BONUS
+
         return {dmg_type_eb: [0, 0, enhancement_dmg]}    # To fit the convention of [dice, sides, flat]
 
     def strength_bonus(self):
@@ -117,10 +130,10 @@ class Weapon:
         def unpack_and_merge_vs_race(data_dict):
             """Unpacks nested 'vs_race' dictionaries into the parent and resolves conflicts."""
             # Create a new dictionary for the merged results
-            # Initialize it with all non-'vs_race' items
+            # Initialize it with all non-'vs_race' and non-'enhancement' items (enhancement is for future implementation)
             merged_dict = {
                 k: v for k, v in data_dict.items()
-                if not k.startswith('vs_race')
+                if not k.startswith('vs_race') and k != 'enhancement'
             }
             # Process 'vs_race' keys for unpacking and conflict resolution
             for key, sub_dict in data_dict.items():
@@ -136,6 +149,9 @@ class Weapon:
                             if avg_new > avg_existing:
                                 merged_dict[sub_key] = sub_value
                             # If avg_new <= avg_existing, the existing value is kept (no change needed)
+                        elif sub_key == 'enhancement':
+                            # Skip enhancement here; it will be handled separately
+                            continue
                         else:
                             # No conflict, simply add the new key/value pair
                             merged_dict[sub_key] = sub_value

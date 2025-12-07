@@ -43,13 +43,126 @@ class TestAttackSimulatorInitialization:
         # Non-Scythe weapons use regular AB, not AB_CAPPED
         assert simulator.ab == cfg.AB
 
-    def test_scythe_uses_ab_capped(self):
-        """Test that Scythe weapons use AB_CAPPED instead of regular AB."""
+    def test_weapon_with_enhancement_greater_than_7(self):
+        """Test AB calculation for weapons with enhancement > 7 (e.g., Scythe +10).
+
+        Logic: If weapon enhancement > 7, add the excess to AB
+        Example: Scythe (enhancement=10) → AB + (10 - 7) = AB + 3
+        """
         cfg = Config(AB=65, AB_CAPPED=70)
         weapon = Weapon("Scythe", cfg)
         simulator = AttackSimulator(weapon, cfg)
 
-        assert simulator.ab == cfg.AB_CAPPED
+        # Scythe has enhancement=10, so AB should be 65 + (10 - 7) = 68
+        # But it's capped at AB_CAPPED=70, so result is 68
+        expected_ab = min(65 + (10 - 7), 70)
+        assert simulator.ab == expected_ab
+        assert simulator.ab == 68  # Explicit check
+
+    def test_weapon_with_enhancement_greater_than_7_capped(self):
+        """Test that AB is capped at AB_CAPPED for high-enhancement weapons.
+
+        If weapon enhancement bonus would exceed AB_CAPPED, it should be capped.
+        """
+        cfg = Config(AB=65, AB_CAPPED=68)
+        weapon = Weapon("Scythe", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # Scythe enhancement=10 → AB + (10 - 7) = 65 + 3 = 68
+        # This equals AB_CAPPED, so no capping needed
+        assert simulator.ab == 68
+
+    def test_weapon_with_enhancement_equals_7_uses_regular_ab(self):
+        """Test that weapons with enhancement exactly = 7 use regular AB (no bonus).
+
+        Only when enhancement > 7 should the excess be added.
+        """
+        cfg = Config(AB=65, AB_CAPPED=70)
+        weapon = Weapon("Longsword", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # Longsword has enhancement=7 (not > 7), so use regular AB
+        assert simulator.ab == cfg.AB
+        assert simulator.ab == 65
+
+    def test_vs_race_enhancement_when_damage_vs_race_enabled(self):
+        """Test AB calculation with vs_race enhancement when DAMAGE_VS_RACE is enabled.
+
+        Example: Greataxe vs Undead (vs_race_undead enhancement=12)
+        When DAMAGE_VS_RACE=True and vs_race_key exists:
+        AB = cfg.AB + (vs_race_enhancement - 7)
+        """
+        cfg = Config(AB=65, AB_CAPPED=70, DAMAGE_VS_RACE=True)
+        weapon = Weapon("Greataxe", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # Greataxe has vs_race_undead with enhancement=12
+        # AB should be 65 + (12 - 7) = 70
+        expected_ab = 65 + (12 - 7)
+        assert simulator.ab == expected_ab
+        assert simulator.ab == 70
+
+    def test_vs_race_enhancement_capped(self):
+        """Test that vs_race enhancement bonus is also capped at AB_CAPPED.
+
+        High vs_race enhancement values should not exceed the cap.
+        """
+        cfg = Config(AB=65, AB_CAPPED=68, DAMAGE_VS_RACE=True)
+        weapon = Weapon("Greataxe", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # Greataxe vs_race_undead enhancement=12 → AB + (12 - 7) = 65 + 5 = 70
+        # But capped at AB_CAPPED=68
+        expected_ab = min(65 + (12 - 7), 68)
+        assert simulator.ab == expected_ab
+        assert simulator.ab == 68
+
+    def test_vs_race_enhancement_ignored_when_damage_vs_race_disabled(self):
+        """Test that vs_race enhancement is NOT used when DAMAGE_VS_RACE is False.
+
+        When DAMAGE_VS_RACE is disabled, even if vs_race enhancement exists,
+        it should use the base enhancement instead.
+        """
+        cfg = Config(AB=65, AB_CAPPED=70, DAMAGE_VS_RACE=False)
+        weapon = Weapon("Greataxe", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # DAMAGE_VS_RACE=False, so use base enhancement=7 (not vs_race enhancement)
+        # Since base enhancement=7 (not > 7), should use regular AB
+        assert simulator.ab == cfg.AB
+        assert simulator.ab == 65
+
+    def test_vs_race_enhancement_with_high_base_enhancement(self):
+        """Test vs_race enhancement when base weapon also has enhancement > 7.
+
+        When DAMAGE_VS_RACE=True and vs_race_key exists with 'enhancement' key,
+        the vs_race enhancement should be used instead of base enhancement.
+        """
+        cfg = Config(AB=65, AB_CAPPED=75, DAMAGE_VS_RACE=True)
+        weapon = Weapon("Greataxe", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # Should use vs_race_undead enhancement=12, not base enhancement=7
+        # AB = 65 + (12 - 7) = 70
+        expected_ab = 65 + (12 - 7)
+        assert simulator.ab == expected_ab
+        assert simulator.ab == 70
+
+    def test_vs_race_key_none_when_damage_vs_race_enabled_no_vs_race_weapon(self):
+        """Test edge case: DAMAGE_VS_RACE=True but weapon has no vs_race_key.
+
+        For weapons without vs_race variants (e.g., Longsword),
+        vs_race_key will be None, so should fall through to regular AB.
+        """
+        cfg = Config(AB=65, AB_CAPPED=70, DAMAGE_VS_RACE=True)
+        weapon = Weapon("Longsword", cfg)
+        simulator = AttackSimulator(weapon, cfg)
+
+        # Longsword has no vs_race variant, so vs_race_key is None
+        # The condition 'enhancement' in self.purple_props[None] would fail
+        # so it should fall through to the else clause and use regular AB
+        assert simulator.ab == cfg.AB
+        assert simulator.ab == 65
 
     def test_attack_prog_generation(self):
         """Test that attack progression is correctly generated from config."""
@@ -733,7 +846,7 @@ class TestAttackSimulatorIntegration:
             KEEN=True,
             IMPROVED_CRIT=True,
             WEAPONMASTER=True,
-            ENHANCEMENT_BONUS=10
+            ENHANCEMENT_SET_BONUS=3
         )
         weapon = Weapon("Scimitar", cfg)
         simulator = AttackSimulator(weapon, cfg)

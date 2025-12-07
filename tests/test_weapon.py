@@ -187,27 +187,28 @@ class TestEnhancementBonus:
     """Tests for enhancement bonus calculations."""
 
     def test_standard_weapon_enhancement_bonus(self):
-        """Test enhancement bonus for standard melee weapons."""
-        cfg = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=False)
+        """Test enhancement bonus for standard melee weapons (purple + set bonus)."""
+        cfg = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=False)
         weapon = Weapon("Scimitar", cfg)
 
         bonus = weapon.enhancement_bonus()
         assert 'slashing' in bonus
-        assert bonus['slashing'][2] == 10  # flat damage
+        # Scimitar has 7 enhancement + 3 set bonus = 10
+        assert bonus['slashing'][2] == 10
 
     def test_scythe_has_fixed_enhancement_bonus(self):
-        """Test that Scythe always has 20 enhancement bonus."""
-        cfg = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=False)
+        """Test that Scythe combines its fixed 10 enhancement with set bonus."""
+        cfg = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=False)
         weapon = Weapon("Scythe", cfg)
 
         bonus = weapon.enhancement_bonus()
-        # Scythe has fixed 20 enhancement bonus regardless of config
-        assert bonus['slashing'][2] == 20 or bonus['piercing'][2] == 20
+        # Scythe has 10 enhancement + 3 set bonus = 13
+        assert bonus['slashing'][2] == 13 or bonus['piercing'][2] == 13
 
     def test_dwarven_waraxe_damage_vs_race_bonus(self):
-        """Test that Dwarven Waraxe gets bonus with DAMAGE_VS_RACE flag."""
-        cfg_no_bonus = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=False)
-        cfg_with_bonus = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=True)
+        """Test that Dwarven Waraxe gets special vs_race enhancement bonus."""
+        cfg_no_bonus = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=False)
+        cfg_with_bonus = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=True)
 
         weapon_no_bonus = Weapon("Dwarven Waraxe", cfg_no_bonus)
         weapon_with_bonus = Weapon("Dwarven Waraxe", cfg_with_bonus)
@@ -215,38 +216,43 @@ class TestEnhancementBonus:
         bonus_no_race = weapon_no_bonus.enhancement_bonus()
         bonus_with_race = weapon_with_bonus.enhancement_bonus()
 
-        # When DAMAGE_VS_RACE is True, should have 12 bonus
-        assert bonus_with_race['slashing'][2] == 12
+        # Without DAMAGE_VS_RACE: 7 + 3 = 10
+        assert bonus_no_race['slashing'][2] == 10
+        # With DAMAGE_VS_RACE and vs_race_dragon: 12 + 3 = 15
+        assert bonus_with_race['slashing'][2] == 15
 
     def test_ranged_weapons_have_zero_enhancement_bonus(self):
-        """Test that ammo-based ranged weapons get 0 enhancement bonus."""
-        cfg = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=False)
+        """Test that ammo-based ranged weapons get 0 enhancement bonus regardless of set bonus."""
+        cfg = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=False)
 
         for weapon_name in ['Heavy Crossbow', 'Light Crossbow', 'Longbow', 'Shortbow', 'Sling']:
             weapon = Weapon(weapon_name, cfg)
             bonus = weapon.enhancement_bonus()
 
-            # Ranged weapons should have 0 enhancement
+            # Ranged weapons should have 0 enhancement (ammo-based weapons ignore set bonus)
             assert all(v[2] == 0 for v in bonus.values())
 
     def test_throwing_weapons_enhancement_bonus(self):
-        """Test enhancement bonus for throwing weapons (different from ranged)."""
-        cfg = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=False)
+        """Test enhancement bonus for throwing weapons (different from ranged ammo-based)."""
+        cfg = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=False)
         weapon = Weapon("Darts", cfg)
 
         bonus = weapon.enhancement_bonus()
-        assert bonus['piercing'][2] == 10  # Should have normal enhancement
+        # Darts have 7 enhancement + 3 set bonus = 10
+        assert bonus['piercing'][2] == 10
 
     def test_damage_type_prioritization(self):
         """Test that enhancement bonus uses correct damage type prioritization."""
-        cfg = Config(ENHANCEMENT_BONUS=10, DAMAGE_VS_RACE=False)
+        cfg = Config(ENHANCEMENT_SET_BONUS=3, DAMAGE_VS_RACE=False)
 
         # Test weapon with multiple damage types
         weapon = Weapon("Halberd", cfg)  # slashing & piercing
         bonus = weapon.enhancement_bonus()
 
         # Should prioritize slashing over piercing
+        # Halberd has 7 enhancement + 3 set bonus = 10
         assert 'slashing' in bonus
+        assert bonus['slashing'][2] == 10
 
 
 class TestStrengthBonus:
@@ -392,7 +398,7 @@ class TestWeaponWithDifferentConfigs:
             COMBAT_TYPE='melee',
             STR_MOD=21,
             TWO_HANDED=True,
-            ENHANCEMENT_BONUS=10,
+            ENHANCEMENT_SET_BONUS=3,
             WEAPONMASTER=True,
             KEEN=True,
             IMPROVED_CRIT=True,
@@ -412,7 +418,7 @@ class TestWeaponWithDifferentConfigs:
             COMBAT_TYPE='ranged',
             STR_MOD=21,
             MIGHTY=10,
-            ENHANCEMENT_BONUS=10,
+            ENHANCEMENT_SET_BONUS=3,
             KEEN=False,
             IMPROVED_CRIT=False
         )
@@ -491,7 +497,7 @@ class TestWeaponDamageTypes:
 
     def test_single_damage_type(self):
         """Test weapon with single damage type."""
-        cfg = Config(ENHANCEMENT_BONUS=10)
+        cfg = Config(ENHANCEMENT_SET_BONUS=3)
         weapon = Weapon("Dagger_PK", cfg)
 
         bonus = weapon.enhancement_bonus()
@@ -499,7 +505,7 @@ class TestWeaponDamageTypes:
 
     def test_dual_damage_type(self):
         """Test weapon with dual damage types."""
-        cfg = Config(ENHANCEMENT_BONUS=10)
+        cfg = Config(ENHANCEMENT_SET_BONUS=3)
         weapon = Weapon("Halberd", cfg)
 
         # Halberd has 'slashing & piercing'

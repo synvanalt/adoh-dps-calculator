@@ -64,7 +64,10 @@ def register_ui_callbacks(app, cfg):
 
             # properties now a dict mapping dmg-type -> params
             for key, val in properties.items():
-                if key == 'legendary' and isinstance(val, dict):
+                if key == 'enhancement':
+                    props_dmg.append(f"+{val} {key.title()}")
+
+                elif key == 'legendary' and isinstance(val, dict):
                     proc = val.get('proc')
                     proc_str = f"On-Hit {int(proc * 100)}%" if isinstance(proc, (int, float)) else ("On-Crit" if proc == 'on_crit' else str(proc))
                     # handle effect key separately
@@ -89,16 +92,19 @@ def register_ui_callbacks(app, cfg):
                     # val can be a list [dice, sides]/[dice, sides, flat] or dict (vs_race mapping)
                     if "vs_race" in key and isinstance(val, dict):
                         # vs_race entry; val is {actual_type: [dice, sides]}
-                        for actual_type, nums in val.items():
-                            dice = nums[0]
-                            sides = nums[1]
-                            flat = nums[2] if len(nums) > 2 else None
-                            if dice == 0 and flat:
-                                props_dmg.append(f"{flat} {actual_type.title()} (vs. race)")
-                            elif dice > 0 and flat:
-                                props_dmg.append(f"{dice}d{sides}+{flat} {actual_type.title()} (vs. race)")
+                        for sub_key, sub_val in val.items():
+                            if sub_key == 'enhancement':
+                                props_dmg.append(f"+{sub_val} {sub_key.title()} (vs. race)")
                             else:
-                                props_dmg.append(f"{dice}d{sides} {actual_type.title()} (vs. race)")
+                                dice = sub_val[0]
+                                sides = sub_val[1]
+                                flat = sub_val[2] if len(sub_val) > 2 else None
+                                if dice == 0 and flat:
+                                    props_dmg.append(f"{flat} {sub_key.title()} (vs. race)")
+                                elif dice > 0 and flat:
+                                    props_dmg.append(f"{dice}d{sides}+{flat} {sub_key.title()} (vs. race)")
+                                else:
+                                    props_dmg.append(f"{dice}d{sides} {sub_key.title()} (vs. race)")
                     else:
                         dice = val[0]
                         sides = val[1]
@@ -158,7 +164,7 @@ def register_ui_callbacks(app, cfg):
         Output('toon-size-dropdown', 'value', allow_duplicate=True),
         Output('combat-type-dropdown', 'value', allow_duplicate=True),
         Output('mighty-input', 'value', allow_duplicate=True),
-        Output('enhancement-bonus-input', 'value', allow_duplicate=True),
+        Output('enhancement-set-bonus-dropdown', 'value', allow_duplicate=True),
         Output('str-mod-input', 'value', allow_duplicate=True),
         Output({'type': 'melee-switch', 'name': 'two-handed'}, 'value', allow_duplicate=True),
         Output({'type': 'melee-switch', 'name': 'weaponmaster'}, 'value', allow_duplicate=True),
@@ -203,7 +209,7 @@ def register_ui_callbacks(app, cfg):
                 default_cfg.TOON_SIZE,
                 default_cfg.COMBAT_TYPE,
                 default_cfg.MIGHTY,
-                default_cfg.ENHANCEMENT_BONUS,
+                default_cfg.ENHANCEMENT_SET_BONUS,
                 default_cfg.STR_MOD,
                 default_cfg.TWO_HANDED,
                 default_cfg.WEAPONMASTER,
