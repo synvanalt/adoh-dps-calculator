@@ -18,7 +18,7 @@ class Config:
         "electrical": 0.25,
         "cold": 0.25,
         "fire": 0.25,
-        "physical": 0.35,
+        "physical": 0.25,
     })
 
     # SIMULATION SETTINGS
