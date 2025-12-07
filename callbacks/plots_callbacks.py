@@ -120,7 +120,7 @@ def register_plots_callbacks(app):
 
         results = results_dict[selected_weapon]
 
-        # DPS vs Cumulative Damage: use cumulative damage (x) vs rolling avg DPS (x)
+        # DPS vs Cumulative Damage: use cumulative damage (x) vs rolling avg DPS (y)
         dps_vals = results.get('dps_rolling_avg') or results.get('dps_per_round') or []
         cum_damage = results.get('cumulative_damage_per_round') or []
         fig1 = go.Figure()

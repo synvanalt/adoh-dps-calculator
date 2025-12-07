@@ -70,7 +70,10 @@ class DamageSimulator:
                         sides = val[1]
                         flat = val[2] if len(val) > 2 else None
                         dmg_entry = [dice, sides] if flat is None else [dice, sides, flat]
-                        self.dmg_dict.setdefault(key, []).append(dmg_entry)
+                        if key in ['slashing', 'piercing', 'bludgeoning']:
+                            self.dmg_dict.setdefault('physical', []).append(dmg_entry)  # Aggregate all physical damage types under 'physical'
+                        else:
+                            self.dmg_dict.setdefault(key, []).append(dmg_entry)
 
             # Handling additional damage entries that are lists of dicts, e.g., [{'fire_fw': [1, 4, 10]}, {'acid': [1, 6]}]
             elif isinstance(dmg_source, list):
