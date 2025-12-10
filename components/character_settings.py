@@ -267,6 +267,40 @@ def build_character_settings(cfg):
             ),
         ], class_name='switcher'),
 
+        # Critical Hit Settings: Overwhelm Critical
+        dbc.Row([
+            dbc.Col(dbc.Switch(
+                id='overwhelm-crit-switch',
+                label='Overwhelming Critical',
+                value=cfg.OVERWHELM_CRIT,
+                persistence=True,
+                persistence_type=persist_type,
+            ), xs=12, md=12),
+            dbc.Tooltip(
+                "On critical hit, adds bonus physical damage based on weapon critical multiplier: x2 adds 1d6, x3 adds 2d6, x4+ adds 3d6.",
+                target='overwhelm-crit-switch',  # must match the component's id
+                placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
+            ),
+        ], class_name='switcher'),
+
+        # Critical Hit Settings: Devastating Critical
+        dbc.Row([
+            dbc.Col(dbc.Switch(
+                id='dev-crit-switch',
+                label='Devastating Critical',
+                value=cfg.DEV_CRIT,
+                persistence=True,
+                persistence_type=persist_type,
+            ), xs=12, md=12),
+            dbc.Tooltip(
+                "On critical hit, adds pure damage based on weapon size: Tiny/Small +10, Medium +20, Large +30.",
+                target='dev-crit-switch',  # must match the component's id
+                placement='left',  # top, bottom, left, right
+                delay={'show': tooltip_delay},
+            ),
+        ], class_name='switcher'),
+
         # Shape Weapon Override: switch and dropdown inline on md, stacked on xs
         dbc.Row([
             dbc.Col(dbc.Switch(

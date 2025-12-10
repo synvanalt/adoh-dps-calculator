@@ -67,6 +67,8 @@ class Config:
     WEAPONMASTER: bool = False
     KEEN: bool = True
     IMPROVED_CRIT: bool = True
+    OVERWHELM_CRIT: bool = False
+    DEV_CRIT: bool = False
     SHAPE_WEAPON_OVERRIDE: bool = False
     SHAPE_WEAPON: str = "Scythe"
 

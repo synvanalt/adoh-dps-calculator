@@ -211,6 +211,26 @@ class DamageSimulator:
                         if dmg_massive_max is not None:
                             dmg_dict['physical'].append(dmg_massive_max)  # Add 'Massive' again after dmg rolls have been multiplied
 
+                        # Overwhelm Critical: Add bonus damage based on crit multiplier
+                        if self.cfg.OVERWHELM_CRIT:
+                            if crit_multiplier == 2:
+                                overwhelm_dmg = [1, 6]  # 1d6
+                            elif crit_multiplier == 3:
+                                overwhelm_dmg = [2, 6]  # 2d6
+                            else:  # crit_multiplier >= 4
+                                overwhelm_dmg = [3, 6]  # 3d6
+                            dmg_dict.setdefault('physical', []).append(overwhelm_dmg)
+
+                        # Devastating Critical: Add bonus pure damage based on weapon size
+                        if self.cfg.DEV_CRIT:
+                            if self.weapon.size in ['T', 'S']:  # Tiny or Small
+                                dev_dmg = [0, 0, 10]  # +10 pure damage
+                            elif self.weapon.size == 'M':  # Medium
+                                dev_dmg = [0, 0, 20]  # +20 pure damage
+                            else:  # Large or larger
+                                dev_dmg = [0, 0, 30]  # +30 pure damage
+                            dmg_dict.setdefault('pure', []).append(dev_dmg)
+
                     if dmg_sneak_max is not None:   # Add 'Sneak Attack' again after crit dmg rolls have been multiplied
                         dmg_dict.setdefault('physical', []).append(dmg_sneak_max)
                         dmg_dict_crit_imm.setdefault('physical', []).append(dmg_sneak_max)
