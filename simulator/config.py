@@ -67,29 +67,31 @@ class Config:
     WEAPONMASTER: bool = False
     KEEN: bool = True
     IMPROVED_CRIT: bool = True
+    OVERWHELM_CRIT: bool = False
+    DEV_CRIT: bool = False
     SHAPE_WEAPON_OVERRIDE: bool = False
     SHAPE_WEAPON: str = "Scythe"
 
     # EXTRA DAMAGE SOURCES: name: [enabled, {damage_type: [dice, sides, flat]}]
     ADDITIONAL_DAMAGE: Dict[str, Any] = field(default_factory=lambda: {
-        "Flame_Weapon":     [True,  {'fire_fw':     [1, 4, 10]}],
-        "Darkfire":         [False, {'fire_fw':     [1, 6, 10]}],
-        "Weapon_Spec":      [False, {'physical':    [0, 0, 2]}],
-        "Epic_Weapon_Spec": [False, {'physical':    [0, 0, 4]}],
         "Bane_of_Enemies":  [False, {'physical':    [2, 6, 0]}],
-        "Blade_Thirst":     [False, {'physical':    [0, 0, 6]}],
-        "Favored_Enemy":    [False, {'physical':    [0, 0, 9]}],
-        "Tenacious_Blow":   [False, {'physical':    [0, 0, 8]}],
-        "Enchant_Arrow":    [False, {'physical':    [0, 0, 15]}],
         "Bard_Song":        [False, {'physical':    [0, 0, 3]}],
+        "Blade_Thirst":     [False, {'physical':    [0, 0, 6]}],
+        "Bless_Weapon":     [False, {'divine':      [2, 6, 0]}],
+        "Darkfire":         [False, {'fire_fw':     [1, 6, 10]}],
+        "Death_Attack":     [False, {'death':       [3, 6, 0]}],
+        "Defeaning_Clang":  [False, {'sonic':       [0, 0, 3]}],
         "Divine_Favor":     [False, {'magical':     [0, 0, 5]}],
         "Divine_Might":     [False, {'divine':      [0, 0, 11]}],
         "Divine_Wrath":     [False, {'pure':        [0, 0, 13]}],
-        "Defeaning_Clang":  [False, {'sonic':       [0, 0, 3]}],
-        "Bless_Weapon":     [False, {'divine':      [2, 6, 0]}],
+        "Enchant_Arrow":    [False, {'physical':    [0, 0, 15]}],
+        "Favored_Enemy":    [False, {'physical':    [0, 0, 9]}],
+        "Flame_Weapon":     [True,  {'fire_fw':     [1, 4, 10]}],
+        "Set_Bonus_Damage": [False, {'pure':        [1, 4, 0]}],
         "Sneak_Attack":     [False, {'sneak':       [5, 6, 0]}],
-        "Death_Attack":     [False, {'death':       [3, 6, 0]}],
-        "Pure_Set_Bonus":   [False, {'pure':        [1, 4, 0]}],
+        "Tenacious_Blow":   [False, {'physical':    [0, 0, 8]}],
+        "Weapon_Spec":      [False, {'physical':    [0, 0, 2]}],
+        "Weapon_Spec_Epic": [False, {'physical':    [0, 0, 4]}],
     })
 
 

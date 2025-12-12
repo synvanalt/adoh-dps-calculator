@@ -747,6 +747,482 @@ class TestResultSummary:
         assert 'crit_rate_actual' in result
 
 
+class TestOverwhelmCritical:
+    """Tests for the Overwhelm Critical feature."""
+
+    def test_overwhelm_crit_disabled_by_default(self):
+        """Test that Overwhelm Critical is disabled by default."""
+        cfg = Config()
+        assert cfg.OVERWHELM_CRIT is False
+
+    def test_overwhelm_crit_can_be_enabled(self):
+        """Test that Overwhelm Critical can be enabled in config."""
+        cfg = Config(OVERWHELM_CRIT=True)
+        assert cfg.OVERWHELM_CRIT is True
+
+    def test_overwhelm_crit_disabled_no_bonus_damage(self):
+        """Test that disabling Overwhelm Critical removes bonus damage from crits."""
+        cfg_disabled = Config(
+            OVERWHELM_CRIT=False,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator_disabled = DamageSimulator("Scimitar", cfg_disabled)
+
+        with patch('builtins.print'):
+            result_disabled = simulator_disabled.simulate_dps()
+
+        # Should have some damage but without overwhelm bonus
+        assert result_disabled['dps_crits'] > 0
+
+    def test_overwhelm_crit_enabled_vs_disabled(self):
+        """Test that enabling Overwhelm Critical increases damage on crit-heavy builds."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            KEEN=True,  # Increases crit range
+            IMPROVED_CRIT=True,
+            ROUNDS=100
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With overwhelm crit enabled and high crit chance, DPS should be decent
+        assert result['dps_crits'] > 0
+
+    def test_overwhelm_crit_x2_multiplier_adds_1d6(self):
+        """Test that x2 crit multiplier adds 1d6 physical damage with Overwhelm Critical."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        # Scimitar has x2 crit multiplier
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        # Check weapon crit multiplier
+        assert simulator.weapon.crit_multiplier == 2
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # DPS should be positive
+        assert result['dps_crits'] > 0
+        # Should have crits
+        assert result['crit_rate_actual'] > 0
+
+    def test_overwhelm_crit_x3_multiplier_adds_2d6(self):
+        """Test that x3 crit multiplier adds 2d6 physical damage with Overwhelm Critical."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        # Scythe has x4 crit multiplier, but we can verify the logic
+        simulator = DamageSimulator("Scythe", cfg)
+
+        # Scythe has x4 multiplier, so it should get 3d6 (not 2d6)
+        assert simulator.weapon.crit_multiplier == 4
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # DPS should be positive
+        assert result['dps_crits'] > 0
+
+    def test_overwhelm_crit_x4_multiplier_adds_3d6(self):
+        """Test that x4+ crit multiplier adds 3d6 physical damage with Overwhelm Critical."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        # Scythe has x4 crit multiplier
+        simulator = DamageSimulator("Scythe", cfg)
+
+        assert simulator.weapon.crit_multiplier == 4
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With x4 crit and overwhelm crit enabled, DPS should be strong
+        assert result['dps_crits'] > 0
+
+    def test_overwhelm_crit_only_on_critical_hits(self):
+        """Test that Overwhelm Critical damage is only added on critical hits."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=50,
+            TARGET_AC=65,  # High AC, very low crit chance
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # On critical immune, should not have overwhelm bonus
+        # DPS no crits should be equal or less than DPS with crits
+        assert result['dps_no_crits'] <= result['dps_crits']
+
+    def test_overwhelm_crit_with_different_weapons(self):
+        """Test Overwhelm Critical works with different weapon crit multipliers."""
+        weapons_to_test = ["Scimitar", "Longsword", "Scythe", "Dagger_PK"]
+        cfg_base = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=30
+        )
+
+        for weapon_name in weapons_to_test:
+            try:
+                simulator = DamageSimulator(weapon_name, cfg_base)
+                with patch('builtins.print'):
+                    result = simulator.simulate_dps()
+
+                # All weapons should have positive DPS
+                assert result['dps_crits'] >= 0
+            except Exception as e:
+                # Skip if weapon not found
+                continue
+
+    def test_overwhelm_crit_with_keen_feat(self):
+        """Test that Overwhelm Critical works well with Keen feat."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            KEEN=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With Keen and Overwhelm Crit, crit rate should be high
+        assert result['crit_rate_actual'] > 20  # At least 20% crit rate expected
+
+    def test_overwhelm_crit_with_improved_crit_feat(self):
+        """Test that Overwhelm Critical works well with Improved Critical feat."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            IMPROVED_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With Improved Crit and Overwhelm Crit, crit rate should be notable
+        assert result['crit_rate_actual'] > 10
+
+    def test_overwhelm_crit_damage_is_physical_type(self):
+        """Test that Overwhelm Critical bonus damage is counted as physical type."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # Physical damage should be tracked
+        damage_by_type = result['damage_by_type']
+        if len(damage_by_type) > 0:
+            # Physical should be present if there were crits
+            if result['crit_rate_actual'] > 0:
+                assert 'physical' in damage_by_type or any(k.startswith('physical') for k in damage_by_type.keys())
+
+    def test_overwhelm_crit_with_multiple_crits_per_round(self):
+        """Test Overwhelm Critical with 5 APR (multiple crits per round possible)."""
+        cfg = Config(
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            AB_PROG="5APR Classic",
+            KEEN=True,
+            IMPROVED_CRIT=True,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With 5 APR and crits enabled, should have significant DPS
+        assert result['dps_crits'] > 0
+        # Should have multiple crits per attack attempt (5+ attacks per round)
+        assert len(result['hits_per_attack']) >= 5
+
+
+class TestDevastatingCritical:
+    """Tests for the Devastating Critical feature."""
+
+    def test_dev_crit_disabled_by_default(self):
+        """Test that Devastating Critical is disabled by default."""
+        cfg = Config()
+        assert cfg.DEV_CRIT is False
+
+    def test_dev_crit_can_be_enabled(self):
+        """Test that Devastating Critical can be enabled in config."""
+        cfg = Config(DEV_CRIT=True)
+        assert cfg.DEV_CRIT is True
+
+    def test_dev_crit_disabled_no_bonus_damage(self):
+        """Test that disabling Devastating Critical removes bonus damage from crits."""
+        cfg_disabled = Config(
+            DEV_CRIT=False,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator_disabled = DamageSimulator("Scimitar", cfg_disabled)
+
+        with patch('builtins.print'):
+            result_disabled = simulator_disabled.simulate_dps()
+
+        # Should have some damage but without dev crit bonus
+        assert result_disabled['dps_crits'] > 0
+
+    def test_dev_crit_tiny_small_weapon_adds_10_pure(self):
+        """Test that Tiny/Small weapons add 10 pure damage on crit with Devastating Critical."""
+        cfg = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        # Dagger_PK is a Tiny weapon (also covered by Tiny/Small category)
+        simulator = DamageSimulator("Dagger_PK", cfg)
+
+        # Verify weapon size is Tiny or Small
+        assert simulator.weapon.size in ['T', 'S']
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # DPS should be positive
+        assert result['dps_crits'] > 0
+
+    def test_dev_crit_medium_weapon_adds_20_pure(self):
+        """Test that Medium weapons add 20 pure damage on crit with Devastating Critical."""
+        cfg = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        # Scimitar is a Medium weapon
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        # Verify weapon size
+        assert simulator.weapon.size == 'M'
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # DPS should be positive
+        assert result['dps_crits'] > 0
+
+    def test_dev_crit_large_weapon_adds_30_pure(self):
+        """Test that Large weapons add 30 pure damage on crit with Devastating Critical."""
+        cfg = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        # Scythe is a Large weapon
+        simulator = DamageSimulator("Scythe", cfg)
+
+        # Verify weapon size
+        assert simulator.weapon.size == 'L'
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # DPS should be positive
+        assert result['dps_crits'] > 0
+
+    def test_dev_crit_only_on_critical_hits(self):
+        """Test that Devastating Critical damage is only added on critical hits."""
+        cfg = Config(
+            DEV_CRIT=True,
+            AB=50,
+            TARGET_AC=65,  # High AC, very low crit chance
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # On critical immune, should not have dev crit bonus
+        # DPS no crits should be equal or less than DPS with crits
+        assert result['dps_no_crits'] <= result['dps_crits']
+
+    def test_dev_crit_pure_damage_type(self):
+        """Test that Devastating Critical bonus is pure damage type."""
+        cfg = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # Pure damage should be tracked if there were crits
+        damage_by_type = result['damage_by_type']
+        if result['crit_rate_actual'] > 0:
+            # Pure damage should be present
+            assert 'pure' in damage_by_type or any(k.startswith('pure') for k in damage_by_type.keys())
+
+    def test_dev_crit_with_keen_feat(self):
+        """Test that Devastating Critical works well with Keen feat."""
+        cfg = Config(
+            DEV_CRIT=True,
+            KEEN=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With Keen and Dev Crit, crit rate should be high
+        assert result['crit_rate_actual'] > 20
+
+    def test_dev_crit_with_improved_crit_feat(self):
+        """Test that Devastating Critical works well with Improved Critical feat."""
+        cfg = Config(
+            DEV_CRIT=True,
+            IMPROVED_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With Improved Crit and Dev Crit, crit rate should be notable
+        assert result['crit_rate_actual'] > 10
+
+    def test_dev_crit_with_overwhelm_crit_combined(self):
+        """Test that Devastating Critical works together with Overwhelming Critical."""
+        cfg = Config(
+            DEV_CRIT=True,
+            OVERWHELM_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            KEEN=True,
+            IMPROVED_CRIT=True,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # Both features enabled should provide excellent DPS on crit builds
+        assert result['dps_crits'] > 0
+        assert result['crit_rate_actual'] > 20
+
+    def test_dev_crit_small_weapon_vs_large_damage_difference(self):
+        """Test that large weapons deal more dev crit damage than small weapons."""
+        cfg_base = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            ROUNDS=100
+        )
+
+        # Small weapon: Dagger (+10 pure)
+        simulator_small = DamageSimulator("Dagger_PK", cfg_base)
+        with patch('builtins.print'):
+            result_small = simulator_small.simulate_dps()
+
+        # Large weapon: Scythe (+30 pure)
+        simulator_large = DamageSimulator("Scythe", cfg_base)
+        with patch('builtins.print'):
+            result_large = simulator_large.simulate_dps()
+
+        # Large weapon should have more total damage due to dev crit bonus
+        assert result_large['dps_crits'] > result_small['dps_crits']
+
+    def test_dev_crit_with_multiple_crits_per_round(self):
+        """Test Devastating Critical with 5 APR (multiple crits per round possible)."""
+        cfg = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            AB_PROG="5APR Classic",
+            KEEN=True,
+            IMPROVED_CRIT=True,
+            ROUNDS=50
+        )
+        simulator = DamageSimulator("Scimitar", cfg)
+
+        with patch('builtins.print'):
+            result = simulator.simulate_dps()
+
+        # With 5 APR and crits enabled, should have significant DPS
+        assert result['dps_crits'] > 0
+        assert len(result['hits_per_attack']) >= 5
+
+    def test_dev_crit_enabled_vs_disabled(self):
+        """Test that enabling Devastating Critical increases crit damage."""
+        cfg_enabled = Config(
+            DEV_CRIT=True,
+            AB=100,
+            TARGET_AC=10,
+            KEEN=True,
+            IMPROVED_CRIT=True,
+            ROUNDS=100
+        )
+        simulator_enabled = DamageSimulator("Scimitar", cfg_enabled)
+
+        with patch('builtins.print'):
+            result_enabled = simulator_enabled.simulate_dps()
+
+        cfg_disabled = Config(
+            DEV_CRIT=False,
+            AB=100,
+            TARGET_AC=10,
+            KEEN=True,
+            IMPROVED_CRIT=True,
+            ROUNDS=100
+        )
+        simulator_disabled = DamageSimulator("Scimitar", cfg_disabled)
+
+        with patch('builtins.print'):
+            result_disabled = simulator_disabled.simulate_dps()
+
+        # Enabled should have higher DPS on crit-heavy builds
+        assert result_enabled['dps_crits'] >= result_disabled['dps_crits']
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
 

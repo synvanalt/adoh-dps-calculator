@@ -86,6 +86,8 @@ def register_core_callbacks(app, cfg):
             State({'type': 'melee-switch', 'name': 'weaponmaster'}, 'value'),
             State('keen-switch', 'value'),
             State('improved-crit-switch', 'value'),
+            State('overwhelm-crit-switch', 'value'),
+            State('dev-crit-switch', 'value'),
             State('shape-weapon-switch', 'value'),
             State('shape-weapon-dropdown', 'value'),
             State({'type': 'add-dmg-switch', 'name': ALL}, 'value'),
@@ -122,7 +124,7 @@ def register_core_callbacks(app, cfg):
         prevent_initial_call=True
     )
     def run_calculation(set_progress, _, __, current_cfg, ab, ab_capped, ab_prog, toon_size, combat_type, mighty, enhancement_set_bonus,
-                        str_mod, two_handed, weaponmaster, keen, improved_crit, shape_weapon_override, shape_weapon,
+                        str_mod, two_handed, weaponmaster, keen, improved_crit, overwhelm_crit, dev_crit, shape_weapon_override, shape_weapon,
                         add_dmg_state, add_dmg1, add_dmg2, add_dmg3,
                         weapons, target_ac, rounds, dmg_limit_flag, dmg_limit, dmg_vs_race,
                         relative_change, relative_std, immunity_flag, immunity_values):
@@ -153,6 +155,8 @@ def register_core_callbacks(app, cfg):
         current_cfg['WEAPONMASTER'] = weaponmaster
         current_cfg['KEEN'] = keen
         current_cfg['IMPROVED_CRIT'] = improved_crit
+        current_cfg['OVERWHELM_CRIT'] = overwhelm_crit
+        current_cfg['DEV_CRIT'] = dev_crit
         current_cfg['SHAPE_WEAPON_OVERRIDE'] = shape_weapon_override
         current_cfg['SHAPE_WEAPON'] = shape_weapon
         current_cfg['TARGET_AC'] = target_ac
