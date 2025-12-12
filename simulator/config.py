@@ -60,8 +60,7 @@ class Config:
     TOON_SIZE: str = "M"        # "S" / "M" / "L"
     COMBAT_TYPE: str = "melee"  # "melee" or "ranged"
     MIGHTY: int = 0
-    # ENHANCEMENT_BONUS: int = 10
-    ENHANCEMENT_SET_BONUS: int = 3  # 1/2/3 (for example, +3 for Pure Vengeful set)
+    ENHANCEMENT_SET_BONUS: int = 3  # 1/2/3 (for example, +3 for Pure Green Vengeful set)
     STR_MOD: int = 21
     TWO_HANDED: bool = False
     WEAPONMASTER: bool = False
@@ -72,7 +71,7 @@ class Config:
     SHAPE_WEAPON_OVERRIDE: bool = False
     SHAPE_WEAPON: str = "Scythe"
 
-    # EXTRA DAMAGE SOURCES: name: [enabled, {damage_type: [dice, sides, flat]}]
+    # EXTRA DAMAGE SOURCES: name: [enabled, {damage_type: [dice, sides, flat]}, description]
     ADDITIONAL_DAMAGE: Dict[str, Any] = field(default_factory=lambda: {
         "Bane_of_Enemies":  [False, {'physical':    [2, 6, 0]},     "Ranger epic feat, Physical damage bonus vs favored enemies."],
         "Bard_Song":        [False, {'physical':    [0, 0, 3]},     "Physical damage bonus from Bard song."],
