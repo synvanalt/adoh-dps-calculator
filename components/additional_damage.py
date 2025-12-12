@@ -88,6 +88,12 @@ def build_additional_damage_rows(additional_damage_dict):
                 style=visibility_flat,
             ),
             html.Span(f"{dmg_type_name}", style={'marginLeft': '0.5em'}),
+            dbc.Tooltip(
+                val[2],     # string, tooltip description
+                target={'type': 'add-dmg-switch', 'name': key},  # must match the component's id
+                placement='left',  # top, bottom, left, right
+                delay={'show': 500},
+            ),
         ], id={'type': 'add-dmg-row', 'name': key}, style={'display': 'none'})
 
         # Combined row: switch on left and widgets on right
